@@ -22,4 +22,7 @@ clear;
 
 %close all;
 %hist(randn(1000));
-histogram(randn(100));
+%histogram(randn(100));
+
+gaussian_2d(100, 2, 1, 3, 2);
+
