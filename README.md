@@ -6,7 +6,7 @@ Teoría
 
 1. Presentación 21/21 -> completada
 2. Mobile robotics I 42/43 -> pendiente ejercicio 5 # 42
-3. Mobile robotics 11/24 II -> en curso
+3. Mobile robotics 23/24 II -> pendiente ejercicio 3 # 12 
 4. Mobile robotics III -> pendiente
 5. ROS2 Architecture I -> pendiente
 6. Linux Commands -> pendiente
@@ -15,8 +15,8 @@ Teoría
 9. Dynamics -> pendiente
 
 Prácticas
-1. S1 Modelo de movimiento 3/5 -> en curso
-2. S1 Slides 6/9 -> en curso
+1. S1 Modelo de movimiento 5/5 -> completada
+2. S1 Slides 9/9 -> completada
 3. S2 Localizacion
 4. S2 Slides
 5. S2 Slides intro Matlab -> en curso

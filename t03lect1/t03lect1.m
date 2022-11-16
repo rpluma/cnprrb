@@ -24,5 +24,10 @@ clear;
 %hist(randn(1000));
 %histogram(randn(100));
 
-gaussian_2d(100, 2, 1, 3, 2);
+%gaussian_2d(100, 2, 1, 3, 2);
+mu=[1 -1];
+Sigma= [.9 0; 0 .3];
+%Sigma=[.9 .4; .4 .3];
+gaussian_2d_cov(mu', Sigma, 500);
+PlotEllipse(mu,Sigma, 1)
 
