@@ -12,6 +12,162 @@
 % * Curso: 2022/23
 % * Plazo de entrega: 12-dic-2022
 %% Ejercicio puntuable - LSE
+% Enunciado
+% Los sensores reales presentan ciertas limitaciones  físicas en cuanto al rango 
+% y campo de visión. Modifica el ejercicio anterior para  contemplar que el sensor 
+% sólo proporciona medidas en un rango limitado 𝑟𝑟𝑙𝑙 y una  orientación limitada 
+% ±𝛼𝛼 con respecto a la pose del robot. Podría darse el caso que no  existieran 
+% landmarks en el campo de visión del sensor, con lo que el robot no dispondría 
+% de información sensorial en una iteración
+% 
+% Aumenta el número de Landmarks a 10 y  considera el caso particular de un 
+% sensor con  un rango máximo de 20m de alcance, y un FOV  de ±60º
+% 
+% Indica claramente en la memoria como tratas  el caso de no tener suficientes 
+% observaciones,  y muéstralo en las gráficas de posición y de  error. Añade/explica 
+% solo la parte del código  que has modificado
+% Solución
+% Definimos la variable Mapa como un diccionario para almacenar todos los campos 
+% correspondientes y definimos la función crear_landmarks para inicializar los 
+% landmarsk de forma aleatoria
+
+% inicialización del script
+clc;
+clear all; 
+%addpath(['auxmatlab/aux_functions'], 'auxmatlab/aux_functions_prob', 'p03lab02');
+
+% diccionario para almacenar los valores referentes al mapa
+Mapa={};
+Mapa.nLandmarks = 10;
+Mapa.Size = 50;      
+
+% creación de landmarks aleatorios
+Mapa.Landmarks = crear_landmarks(Mapa);
+%% 
+% Definimos la función leer_sensores que devuelve las distancias teniendo en 
+% cuenta el rango del sensor y orientación del robot. La función colorea en verde 
+% los sensores que quedan en rango
+
+% inicialización de parámetros del robot
+Robot={};
+Robot.xTrue=[-5 -5 pi/2]'; % posición inicial del robot
+Robot.xOdom=Robot.xTrue; % posición odométrica 
+Robot.xEst = Robot.xTrue; % posición estimada con LSE
+Robot.inc_x = 1;
+Robot.inc_phi = pi/2;
+Robot.u_stdx = 0.5;
+Robot.u_stdy = 0.5;
+Robot.u_stdphi = 0.5*pi/180;
+Robot.std = diag([Robot.u_stdx, Robot.u_stdy, Robot.u_stdphi]);
+Robot.U = Robot.std .^ 2;
+
+% incialización de parámetros del sensor
+Sensor={};
+Sensor.var_d=0.05^2; % varianza del sensor de distancia
+Sensor.std_d = sqrt(Sensor.var_d); % desviación típica
+Sensor.rango=20; % rango lineal del sensor en metros
+Sensor.alfa=90; % rango angular (FOV=+/-alfa) en grados
+
+% lectura de distancias
+Sensor.z = leer_distancias(Mapa, Robot, Sensor);
+%% 
+% Realizamos el cuadrado teniendo en cuenta lo siguiente:
+%% 
+% # Inicializamos variables antes de entrar en el bucle
+% # Para cada paso del bucle, movemos en línea recta o giramos en función del 
+% número de paso
+% # La posición odométrica la calculamos sin errores
+% # La posición real la simulamos para que añada ruido
+% # Leemos los sensores que están en rango
+% # Si hay 3 o más sensores en rango, estimamos la posición con LSE
+% # En caso contrario, actualizamos la estimación anterior con la acción odométrica
+% # Actualizamos errores y dibujamos el robot
+
+% 1 Incializamos variables
+num_loops = 44;
+loc_error = zeros(num_loops,1);
+odo_error = zeros(num_loops,1);
+num_sensors = zeros(num_loops,1);
+Lse={};
+Lse.max_iter = 100;
+Lse.tolerance = 1.0e-09;  
+
+for i=1:num_loops
+    % 2 decidimos si avanzar o girar
+    if (mod(i,11)==0)
+        u=[0 0 Robot.inc_phi]'; % giro en cada esquina
+    else
+        u=[Robot.inc_x 0 0]'; % línea recta en el resto
+    end
+
+    % 3 cálculo de la posición odométrica sin errores
+    Robot.xOdom = pose_comp(Robot.xOdom, u);
+
+    % 4 añadimos ruido a la acción para simular la actuación ruidosa
+    noise = Robot.std*randn(3,1);
+    uNoisy = pose_comp(u, noise);
+    Robot.xTrue = pose_comp(Robot.xTrue, uNoisy);
+
+    % 5 Lectura de sensores en rango
+    Sensor.z = leer_distancias(Mapa, Robot, Sensor);
+    
+    if sum(Sensor.z>0) >= 3 % los sensores que no están en rango devuelven distancia negativa
+        % 6 Si hay 3 o más sensores en rango estimamos con LSE
+        Robot.xEst = estimar_posicion(Mapa, Robot, Sensor, Lse);      
+    else        
+        % 7 Si hay menos de 3 sensores, actualizamos con la acción ruidosa
+        Robot.xEst = pose_comp(Robot.xEst, u);
+    end
+
+
+    % 8 Actualizamos errores y dibujamos
+    loc_error(i) = sqrt((Robot.xTrue(1)-Robot.xEst(1))^2+(Robot.xTrue(2)-Robot.xEst(2))^2);    
+    odo_error(i) = sqrt((Robot.xTrue(1)-Robot.xOdom(1))^2+(Robot.xTrue(2)-Robot.xOdom(2))^2);
+    num_sensors(i) = length(Sensor.z(Sensor.z>1));
+    plot(Robot.xTrue(1),Robot.xTrue(2),'bo');   % Real Position (Ground Truth with Noise)
+    plot(Robot.xOdom(1),Robot.xOdom(2),'r.');   % Odometry or ideal (Noise-free)
+    pause(0.1);
+end
+%% 
+% Generamos las gráficas finales
+
+avg_loc_error = mean(loc_error);
+avg_odo_error = mean(odo_error);
+avg_num_sensors = mean(num_sensors);
+
+figure(2);
+set(gcf,'Visible','on');
+subplot(311); 
+plot(loc_error,'r'); 
+hold on; 
+line([1 size(loc_error,1)],[avg_loc_error avg_loc_error]); 
+title('Position Errors with localization');
+xlabel('Iteration Number');
+ylabel('Error (m)');
+
+subplot(312); 
+plot(odo_error,'k'); 
+hold on; 
+line([1 size(odo_error,1)],[avg_odo_error avg_odo_error]); 
+title('Odometric error');
+xlabel('Iteration Number');
+ylabel('Error (m)');
+
+subplot(313); 
+plot(num_sensors,'k'); 
+hold on; 
+line([1 size(num_sensors,1)],[avg_num_sensors avg_num_sensors]); 
+title('Sensors in range');
+xlabel('Iteration Number');
+ylabel('# Sensors');
+
+%%
+x
+%%
+x
+%%
+
+%% x
 %% Ejercicio puntuable - FP
 % Implementación del filtro de partículas
 % a) Medida sensoríal
@@ -88,7 +244,7 @@ for i=1:44
     end
 
     % pesos del FP (ver apartado d)
-    w= 
+    
 end
 
 % c) Actualización de poses
