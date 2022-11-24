@@ -10,13 +10,10 @@ function [xEst] = estimar_posicion(Mapa, Robot, Sensor, Lse)
     iValidSensors = find(Sensor.z >= 0); 
     numSensors = length(iValidSensors);
 
-    % inicializamos la estimación con la odometría del robot
-    xEst = Robot.xOdom;     % initial estimation is xOdom - the odometry position (noise-free)
-
     %-------------------------------
     % 15 LSE - Least Square Estimation
     %-------------------------------
-    xEst = Robot.xOdom;
+    xEst = Robot.xOdom; % inicializamos la estimación con la odometría
     iteration = 0;
     incr = ones(1,2);       % initialize increment (step)    
     h = zeros(numSensors, 1); % predicted observations (sensor model)
@@ -39,7 +36,7 @@ function [xEst] = estimar_posicion(Mapa, Robot, Sensor, Lse)
         end
     
         % 18 Añadir R ruido dependiente z y calcular error=z-h
-        R = diag(Sensor.var_d*sqrt(z));    % observation variance grow with the root of the distance
+        R = diag(Sensor.dVar*sqrt(z));    % observation variance grow with the root of the distance
         error = z - h;              % difference between measurement and prediction
 
         % 19 incr!
@@ -51,10 +48,6 @@ function [xEst] = estimar_posicion(Mapa, Robot, Sensor, Lse)
 
         xEst(1:2) = xEst(1:2)+incr;
         iteration = iteration+1;        
-        plot(xEst(1),xEst(2),'.g'); % plot current estimation (green point)
     end % while 
-
-    % LSE Estimation is Done!
-    plot(xEst(1),xEst(2),'k.');  % the last estimation is plotted in black        
 end
 

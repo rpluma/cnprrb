@@ -19,18 +19,11 @@ function z = leer_distancias(Mapa, Robot, Sensor)
             Mapa.Landmarks(1,i)-Robot.xTrue(1));
 
         % calculamos la diferencia en grados entre la pose del robot y theta2
-        diferencia = theta2-Robot.xTrue(3);
-        if diferencia > pi
-            diferencia = diferencia-2*pi;
-        elseif diferencia < -pi
-            diferencia = diferencia+2*pi;
-        end
-        diferencia=diferencia*180/pi;
-        % [i theta2*180/pi Robot.xTrue(3)*180/pi diferencia]
-
+        diferencia = AngleWrap(theta2-Robot.xTrue(3))*180/pi;
+        
         % si está en rango devolvemos la distancia con ruido gaussiano
-        if (dist <= Sensor.rango) && (abs(diferencia) < Sensor.alfa)
-            z(i) = abs(dist + Sensor.std_d*randn(1,1)); % distancia>0
+        if (dist <= Sensor.rango) && (abs(diferencia) < Sensor.alpha)
+            z(i) = abs(dist + Sensor.dStd*randn(1,1)); % distancia>0
             plot(Mapa.Landmarks(1,i),Mapa.Landmarks(2,i),'sg','LineWidth',4);
         else
             z(i) = -1; % descartar la distancia poniendo un valor negativo
