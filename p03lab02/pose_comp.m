@@ -14,9 +14,5 @@ function p=pose_comp(p1, p2)
     p = p1 + (p2' * R)';
 
     % restringimos el ángulo al intervalo [-pi, pi]
-    if (p(3) > pi)
-        p(3) = p(3) - 2*pi;
-    elseif(p(3) < -pi)
-        p(3) = p(3) + 2*pi;
-    end
+    p(3) = AngleWrap(p(3));
 end
