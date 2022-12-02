@@ -4,6 +4,7 @@
 # Carpetas matlab
 resources/
 *.asv
+*.mlx
 
 
 # Carpetas ROS2
