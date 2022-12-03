@@ -1,14 +1,16 @@
-function [Robot] = create_robot(lenFw, totSteps)
+function [Robot] = create_robot(p0, lenFw, totSteps)
 %CREATE_ROBOT Crea un robot y asig
+%   p0 es la pose inicial del robot
 %   Prueba: 
 %       lenFw=1; % longitud del paso de avance
 %       totSteps=44; % número total de pasos
-%       lenFw=1;totSteps=44;Robot=create_robot(lenFw, totSteps)
+%       pos0 = [0 0 pi/2]';
+%       p0=[0 0 pi]';lenFw=1;totSteps=44;Robot=create_robot(p0,lenFw, totSteps)
 %
     Robot = {};
-    Robot.xTrue = [0 0 0]'; % posición inicial real
-    Robot.xOdom = Robot.xTrue; % posición odométrica
-    Robot.xEst = Robot.xTrue; % posición estimada
+    Robot.xTrue = p0; % posición inicial real
+    Robot.xOdom = p0; % posición odométrica
+    Robot.xEst = p0; % posición estimada
 
     % Configuración LSE
     Robot.lseMaxIter = 100; % Máximo número de iteraciones en LSE
@@ -16,7 +18,7 @@ function [Robot] = create_robot(lenFw, totSteps)
     
     % Configuración FP
     Robot.fpParticles = 100; % número total de partículas
-    Robot.fpPos = zeros(3, Robot.fpParticles); % poses de las partículas
+    Robot.fpPos = ones(3, Robot.fpParticles).*p0; % pose de partículas
 
     % Acciones de actualización
     Robot.uForward = [lenFw 0 0]'; % acción de avanzar

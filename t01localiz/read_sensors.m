@@ -1,4 +1,4 @@
-function [zTrue, zNoisy, bVisible] = read_sensors(Robot,Mapa)
+function [zTrue, zNoisy, bVisible] = read_sensors(Robot, Mapa)
 %LEER_SENSORES Lee los sensores desde la posición real añadiendo ruido
 %   zTrue devuelve la distancia y ángulo a cada sensor
 %   zNoisy añade ruido a zTrue

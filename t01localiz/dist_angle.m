@@ -9,6 +9,6 @@ function [z] = dist_angle(pose, landmark)
     dist = norm(pose(1:2)-landmark(1:2)); % distancia euclídea
     angle = atan2(landmark(2)-pose(2),landmark(1)-pose(1)); % ángulo
 
-    z = [dist angle_sum(angle, 0)]'; % se suma 0 al ángulo para normalizar
+    z = [dist angle_sum(angle, -pose(3))]'; % diferencia entre ángulos
 end
 

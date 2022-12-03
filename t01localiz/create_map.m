@@ -1,4 +1,4 @@
-function [Mapa] = create_map(Size, nLandmarks, iFig)
+function [Mapa, fg] = create_map(Size, nLandmarks)
 %CREATE_MAP Crea un mapa con sus Landmarks e inicializa la visualización
 %   Size es el tamaño del mapa donde se ubicarán los landmarks (m)
 %   nLandmarks es el número de Landmarks aleatorios a crear
@@ -14,7 +14,7 @@ function [Mapa] = create_map(Size, nLandmarks, iFig)
     Mapa.Landmarks = Mapa.Landmarks - [Size/2 Size/2]';
 
     % preparar la visualización
-    figure(iFig);
+    fg=figure();
     set(gcf,'Visible','on');    % pup-up window
     
     % visualizar las esquinas dejando margen alrededor
