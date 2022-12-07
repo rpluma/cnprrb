@@ -14,7 +14,7 @@
 % observaciones,  y muéstralo en las gráficas de posición y de  error. Añade/explica 
 % solo la parte del código  que has modificado
 %% Inicialización del mapa
-% Aunque el enunciado no lo especifica, creamos un mapa de 100x100 similar al 
+% Aunque el enunciado no lo especifica, creamos un mapa de 50x50 similar al 
 % que aparece en la figura para que haya sensores fuera de rango tanto por el 
 % ángulo como por la distancia.
 
@@ -56,17 +56,22 @@ uNext = uForward;
 update_figure(Robot, Mapa, bVisible, 0);
 
 for i=1:totSteps
+    % Actualización de las posiciones real y odométrica
     Robot.xTrue = comp_noisy(Robot.xTrue, uNext, Robot.actSigma);
     Robot.xOdom = comp_odom (Robot.xOdom, uNext);
     [zTrue, zNoisy, bVisible] = read_sensors(Robot, Mapa);
+
+    % Actualización de estimación por LSE si hay 3 o más balizas
     if (sum(bVisible) >= 3)
         Robot.xEst = est_lse(Robot, Mapa, zNoisy, bVisible);
+       
+    % Actualización desde última posición estimada si hay menos de 3
     else
         Robot.xEst = comp_odom(Robot.xEst, uNext);
     end
-    update_figure(Robot, Mapa, bVisible, 0);
 
-    % actualización de errores y de número de sensores visibles
+    % actualización de figura, errores y de número de sensores visibles
+    update_figure(Robot, Mapa, bVisible, 0);
     Robot.errOdo(i) = norm(Robot.xTrue(1:2)-Robot.xOdom(1:2));
     Robot.errLSE(i) = norm(Robot.xTrue(1:2)-Robot.xEst(1:2));
     Robot.senLSE(i) = sum(bVisible);
@@ -76,17 +81,10 @@ for i=1:totSteps
         uNext = uTurnLeft;
     else
         uNext = uForward;
-    end
-    
-    pause(0.5);
-    
+    end    
+    pause(0.5);    
 end
 %% Visualización de errores
-% 
-% 
-% Creamos el robot
-% 
-% eamos el mapa
 
 figure(2); 
 set(gcf,'Visible','on');

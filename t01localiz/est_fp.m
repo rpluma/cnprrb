@@ -4,11 +4,11 @@ function [xEst, Best, bVisible] = est_fp(Robot, Mapa, zNoisy, iMethod)
 %   iMethod es el método de estimación elegido
 
     % elegimos un sensor al azar
-    iSensor = randperm(Mapa.nLandmarks, 1);
-    z = zNoisy(: , iSensor);
-    landmark = Mapa.Landmarks(:, iSensor);
+    iSelected = randperm(Mapa.nLandmarks, 1);
+    z = zNoisy(: , iSelected);
+    landmark = Mapa.Landmarks(:, iSelected);
     bVisible = zeros(1, Mapa.nLandmarks);
-    bVisible(1, iSensor) = 1; 
+    bVisible(1, iSelected) = 1; 
     
     % calculamos los pesos
     W = zeros(1, Robot.fpParticles);

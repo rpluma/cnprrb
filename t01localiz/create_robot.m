@@ -30,7 +30,7 @@ function [Robot] = create_robot(p0, totSteps, actSigma, senSigma, senRange)
     Robot.errOdo = zeros(totSteps, 1); % error localización odométrica
     Robot.errLSE = zeros(totSteps, 1); % error estimación  LSE
     Robot.senLSE = zeros(totSteps, 1); % número de sensores visibles en LSE
-    Robot.errFP  = zeros(totSteps, 3); % error est. FP con los 3 métodos
+    Robot.errFP  = zeros(totSteps, 2); % error est. FP posición/orientación
     Robot.senFP  = zeros(totSteps, 1); % número del sensor elegido en FP
 
 end
