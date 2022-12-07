@@ -40,10 +40,10 @@ function [xEst, numSensors] = est_lse(Robot, Mapa, zNoisy, bVisible)
         R = diag(Robot.senSigma(1)^2*sqrt(zd));
         
         % incr!
-        incr = inv(jH'*inv(R)*jH) * jH'*inv(R)*error
+        incr = inv(jH'*inv(R)*jH) * jH'*inv(R)*error;
     
         % Update Estimation xEst
-        xEst(1:2) = xEst(1:2)+incr
+        xEst(1:2) = xEst(1:2)+incr;
 
     end % while 
 end

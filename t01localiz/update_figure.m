@@ -28,5 +28,6 @@ function [] = update_figure(Robot, Mapa, bVisible, bFP)
         part=plot(Robot.fpPos(1, :), Robot.fpPos(2, :), '.');
         set(part, 'MarkerSize', 5, 'Color', [rand rand rand]);
     end
+    
 end
 

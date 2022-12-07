@@ -18,10 +18,14 @@ function [Mapa, fg] = create_map(Size, nLandmarks)
     set(gcf,'Visible','on');    % pup-up window
     
     % visualizar las esquinas dejando margen alrededor
-    mg = Size*0.75;
+    mg = Size*0.5;
+    plot(-mg, -mg, 'sr'); % landmark oculta
+    plot(-mg, -mg, 'sg'); % landmark visible
+    plot(-mg, -mg, 'kx'); % posición real
+    
     plot([-mg -mg mg mg], [-mg mg -mg mg], 'k+');
     hold on; grid on; axis equal;
-    
+        
     % plot landmarks (magenta squares)
     plot(Mapa.Landmarks(1,:),Mapa.Landmarks(2,:),'sm','LineWidth',4);
 
@@ -30,5 +34,6 @@ function [Mapa, fg] = create_map(Size, nLandmarks)
         text(Mapa.Landmarks(1,k)+1,Mapa.Landmarks(2,k), sprintf('L%d',k) );
     end
 
+    
 end
 
