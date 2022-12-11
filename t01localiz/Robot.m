@@ -304,68 +304,6 @@ classdef Robot
 
     end % Move
 
-		function obj = Fix(obj)
-			
-	        delta = dist_angle(r.pEstF, r.pOdom);
-	        %F0 = r.pEstF
-	        %O0 = r.pOdom
-	        %T0 = r.pTrue
-	        %D0 = (r.pOdom-r.pEstF)
-        	line([r.pEstF(1), r.pOdom(1)], [r.pEstF(2), r.pOdom(2)],...
-        		'LineStyle',':', 'Color','red', 'LineWidth',2);
-                    
-	        % giro del robot y partículas hacia la posición odométrica
-	        u_giro1 	= [0 0 delta(2)]'; % correción ángulo hacia odométrica
-	        r.pTrue 	= comp_noisy(r.pTrue, u_giro1, r.actSigma);
-	        r.pPart 	= comp_noisy(r.pPart, u_giro1, 0); % r.actSigma);
-	        %r.pEstL 	= comp_odom(r.pEstL, u_giro1);
-	        r.pEstF 	= comp_odom(r.pEstF, u_giro1);
-        
-	        % avance hasta la posición odométrica
-	        u_avanc 	= [delta(1) 0 0]'; % avance hasta odométrica
-	        r.pTrue 	= comp_noisy(r.pTrue, u_avanc, r.actSigma);
-	        r.pPart 	= comp_noisy(r.pPart, u_avanc, 0); % r.actSigma);
-	        %r.pEstL 	= comp_odom(r.pEstL, u_avanc);
-	        r.pEstF 	= comp_odom(r.pEstF, u_avanc);
-        
-	        % giro hacia la pose odométrica
-	        u_giro2 	= [0 0 r.pOdom(3)-r.pEstF(3)]';
-	        r.pTrue 	= comp_noisy(r.pTrue, u_giro2, r.actSigma);
-	        r.pPart 	= comp_noisy(r.pPart, u_giro2, 0); % r.actSigma);
-	    	%r.pEstL	= comp_odom(r.pEstL, u_giro2);
-	        r.pEstF 	= comp_odom(r.pEstF, u_giro2);
-
-	        obj = r.FP();
-
-	        %F1 = r.pEstF
-	        %O1 = r.pOdom
-	        %T1 = r.pTrue
-	        %D1 = (r.pOdom-r.pEstF)
-
-	        % movemos todas las estimaciones ajustando la diferencia
-	        %delta = (r.pOdom-r.pEstF);
-	        %r.pEstL = r.pEstL+(r.pOdom-r.pEstF);
-	        %r.pPart = r.pPart+(r.pOdom-r.pEstF);
-	        
-	        % estimamos la nueva posición LSE y FP
-	        %obj = r.LSE(uOdom);
-	        %obj = r.Sense();
-	        %obj = r.FP();
-
-	        % estimamos la posición mediante filtro de partículas
-	        %[xEst, Best, bVisible] = est_fp(Robot, Mapa, zNoisy, 1);
-	        %r.pEstF = xEst; % nueva posición del robot
-	        %r.pPart = Best; % nueva posición de partículas seleccionadas
-
-		    % actualiza el histórico de poses
-		    r.pHist(:,r.iHist) = ... % poses
-		    	[r.pTrue; r.pOdom; r.pEstL;r.pEstF];    		
-		    
-		    % actualiza el histórico de balizas
-		    r.bHist(:,r.iHist) = ... % num visibles, elegida, distancia
-		    	[sum(r.bVisible); r.iLmFP; r.zTrue(1, r.iLmFP)];
-
-		end
 
 		function PlotErrors(obj)
 			iMax = obj.iHist;
