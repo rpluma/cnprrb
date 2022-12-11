@@ -4,186 +4,191 @@ classdef Robot
 	%end
 
 	properties (Constant)
-		lseMax = 100; % Max iteration
-		lseTol = 1.0e-09; % Tolerance
-		fpPart = 100;
-		fpMethod = 'weight'; % best, mean, weight
-		maxHist = 100;
-
+		lseMax        = 100;      % LSE Max iteration
+		lseTol        = 1.0e-09;  % LS Tolerance
+		fpPart        = 100;      % Number of particles
+		fpMethod      = 'weight'; % Estimation method: best, mean, weight
+		maxHist       = 100;      % Max number of movements
 	end
 
 	properties(Access = public)
 		% Mapa y landmarks
-			mapSize % tamaño del mapa
-			ogrMap % objeto gráfico para el mapa
-			numLmarks % número de balizas
-			posLmarks % posición de las balizas
-			ogrLmarks % objeto gráfico de cada baliza
-			ogrLegend % lista de elementos en la leyenda
+			mapSize    % tamaño del mapa
+			ogrMap     % objeto gráfico para el mapa
+			numLmarks  % número de balizas
+			posLmarks  % posición de las balizas
+			ogrLmarks  % objeto gráfico de cada baliza
+			ogrLegend  % lista de elementos en la leyenda
 
 		% Poses e histórico de poses
-			pTrue % posición real (sujeta a ruido)
-			pOdom % posición odométrica (ideal sin ruido)
-			pEstL % estimación LSE
-			pEstF % estimación FP		
-			pPart % pose de las partículas
-			pHist % Histórico de poses (True+Odom+LSE+FP)
-			bHist % Histórico de balizas (Visibles, Elegida, distancia)			
-			iHist % Índice a arrays de históricos
+			pTrue      % posición real (sujeta a ruido)
+			pOdom      % posición odométrica (ideal sin ruido)
+			pEstL      % estimación LSE
+			pEstF      % estimación FP		
+			pPart      % pose de las partículas
+			pHist      % Histórico de poses (True+Odom+LSE+FP)
+			bHist      % Histórico de balizas (Visibles, Elegida, distancia)			
+			fHist      % Histórico de correcciones de posición
+      iHist      % Índice a arrays de históricos
 
 		% Precición y rango de actuadores y sensores
-			actSigma % desviación típica en [m m rad]
-			senSigma % desviación típica en [m rad]'
-			senRange % alcance (distancia/FOV) [m rad]'
+			actSigma   % desviación típica en [m m rad]
+			senSigma   % desviación típica en [m rad]'
+			senRange   % alcance (distancia/FOV) [m rad]'
 
 		% lectura y visibilidad de balizas
-			zTrue 		% distancia y ángulo real desde zTrue
-			zNoisy 		% distinacia y ángulo desde zTrue con ruido
-			bVisible	% balizas dentro del rango y distancia
-			nVisible	% número de balizas en rango del sensor
-			iVisible	% baliza elegida al azar
+			zTrue      % distancia y ángulo real desde zTrue
+			zNoisy     % distinacia y ángulo desde zTrue con ruido
+			bVisible   % balizas dentro del rango y distancia
+			nVisible   % número de balizas en rango del sensor
+			iLmFP      % baliza elegida al azar para el FP
 	end
 	
 	methods
-		function obj = Robot(mapSize, numLmarks, pose0)
+		function r = Robot(mapSize, numLmarks, pose0)
+    % Construct a robot and generates random landmarks
+
 			% Mapa y landmarks
-				obj.mapSize 	= mapSize;
-				obj.ogrMap 		= 0;
-				obj.numLmarks 	= numLmarks;
-				obj.posLmarks 	= mapSize*rand(2, numLmarks)-mapSize/2;
-				obj.ogrLmarks 	= gobjects(2, numLmarks);
-				obj.ogrLegend   = 0;
+				r.mapSize 	= mapSize;
+				r.ogrMap    = 0;
+				r.numLmarks = numLmarks;
+				r.posLmarks = mapSize*rand(2, numLmarks)-mapSize/2;
+				r.ogrLmarks = gobjects(2, numLmarks);
+				%r.ogrLegend = 0;
 			
-			% Poses e histórico de poses
-				obj.pTrue 		= pose0;
-				obj.pOdom 		= pose0;
-				obj.pEstL 		= pose0; 
-				obj.pEstF 		= pose0; 
-				obj.pPart 		= zeros(3, obj.fpPart) + pose0;
-
-				obj.pHist		= zeros(12, obj.maxHist);
-				obj.bHist		= zeros(3,  obj.maxHist); 
-				obj.iHist		= 1;
-
-				obj.pHist(:,obj.iHist) = [obj.pTrue; obj.pOdom; obj.pEstL; obj.pEstF];
+			% Poses 
+				r.pTrue 		= pose0;
+				r.pOdom 		= pose0;
+				r.pEstL 		= pose0; 
+				r.pEstF 		= pose0; 
+				r.pPart 		= zeros(3, r.fpPart) + pose0;
 
 			% Precición y rango de actuadores y sensores
-				%obj.actSigma 	= [0.5 0.5 0.5*pi/180]'; 
-				%obj.actSigma 	= [0.1 0.1 5*pi/180]'; 
-				obj.actSigma 	= [0.2 0.2 10*pi/180]'; 
-				%obj.senSigma 	= [0.05 0.5*pi/180]'; 
-				%obj.senSigma 	= [0.1 5*pi/180]'; 
-				obj.senSigma 	= [0.2 10*pi/180]'; 
-				obj.senRange 	= [20 60*pi/180]'; 
+				r.actSigma 	= [0.2;0.2;10*pi/180]; % [0.5;0.5;0.5*pi/180]
+				r.senSigma 	= [0.2;    10*pi/180]; % [0.05;0.5*pi/180]
+				r.senRange 	= [20 ;    60*pi/180]; 
 
 			% lectura y visibilidad de balizas
-				obj.zTrue 		= zeros(2, numLmarks);
-				obj.zNoisy 		= zeros(2, numLmarks);
-				obj.bVisible	= ones (1, numLmarks);
-				obj.nVisible	= numLmarks;
-				obj.iVisible	= 0;
-		end % constructor
+				r.zTrue 		= zeros(2, numLmarks);
+				r.zNoisy 		= zeros(2, numLmarks);
+				r.bVisible	= ones (1, numLmarks); % qué balizas son visibles
+				r.nVisible	= numLmarks;           % número de balizas visibles
+				r.iLmFP	= 0;                   % baliza elegida para FP
 
-		function obj = Sense(obj)
-    		for i = 1:obj.numLmarks
-        		obj.zTrue(:, i) = dist_angle(obj.pTrue, obj.posLmarks(:, i));
+      % Históricos de poses y de sensores
+        r.pHist     = zeros(12, r.maxHist);
+        r.bHist     = zeros(3,  r.maxHist);
+        r.fHist     = zeros(3,  r.maxHist);
+        r.pHist(:,1)= [r.pTrue; r.pOdom; r.pEstL; r.pEstF];
+        r.iHist     = 1;
 
-		        obj.zNoisy(:, i) = obj.zTrue(:,i) + obj.senSigma .*randn(2, 1);
-		        % TODO CONFIRMAR QUE AQUÍ NO DEPENDE DE LA DISTANCIA
-	            % el ruido de la distancia es proporcional a su raiz cuadrada
-        		%zNoisy(1,i) = zTrue(1:i)+Robot.senSigma(1)*randn(1,1)*sqrt(zTrue(1:i));
-		        % el ruido del ángulo no depende de la diferencia de ángulos
-        		%zNoisy(2,i) = zTrue(2:i)+Robot.senSigma(2)*randn(1,1);
+		  end % constructor
 
-        		% distancia <= rango AND angulo < FOV
-        		obj.bVisible(i) = obj.zTrue(1,i)<=obj.senRange(1) && ...
-        			(abs(obj.zTrue(2,i)) <= obj.senRange(2));        
-    		end
-    		obj.nVisible = sum(obj.bVisible);
-    		obj.iVisible = randperm(obj.numLmarks, 1); % aleatorio
-		end % sense
+		function r = Sense(r)
+    % Computes distance and angle to each landmark
 
-		function obj = LSE(obj, uOdom)
-			if obj.nVisible < 3
-				obj.pEstL = comp_odom(obj.pEstL, uOdom);
-			else
-				obj.pEstL = obj.pOdom;
-			    iter = 0;
-    			incr = ones(1,2);       % initialize increment (step)    
-    			h = zeros(obj.nVisible, 1); % predicted observations (sensor model)
-    			jH = zeros(obj.nVisible,2); % jacobian of the observation function for all the landmarks
+  		for i = 1:r.numLmarks
+        % TODO CONFIRMAR QUE LA LECTURA NO DEPENDE DE LA DISTANCIA
+        % el ruido de la distancia es proporcional a su raiz cuadrada
+        % zNoisy(1,i) = zTrue(1:i)+Robot.senSigma(1)*randn(1,1)*sqrt(zTrue(1:i));
+        % el ruido del ángulo no depende de la diferencia de ángulos
+        %zNoisy(2,i) = zTrue(2:i)+Robot.senSigma(2)*randn(1,1);
+    		r.zTrue(:, i) = dist_angle(r.pTrue, r.posLmarks(:, i));
+        r.zNoisy(:, i) = r.zTrue(:,i) + r.senSigma .*randn(2, 1);
+    		% distancia <= rango AND angulo < FOV
+    		r.bVisible(i) = r.zTrue(1,i)<=r.senRange(1) && ...
+                  			(abs(r.zTrue(2,i)) <= r.senRange(2));        
+  		  end
+
+      % cuántos son visibles para LSE y cuál se usará en FP
+  		r.nVisible = sum(r.bVisible);
+  		r.iLmFP = randperm(r.numLmarks, 1); % aleatorio
+
+		  end % sense
+
+		function r = LSE(r, uOdom)
+    % Estimate position with Least Squares
+
+      % Move the estimated possition according to last action
+      r.pEstL = comp_odom(r.pEstL, uOdom);
+			
+      if r.nVisible >= 3 % LSE only works if 3 or more visible landmarks
+        % initializations
+		    iter  = 0;
+    		incr  = ones(1,2);                  % initialize increment (step)    
+    		h     = zeros(r.nVisible, 1);       % predicted observations (sensor model)
+    		jH    = zeros(r.nVisible,2);        % jacobian of the observation     
+        iRng  = find(r.bVisible==1);        % índice de balizas en rango
+        lmRng = r.posLmarks(:, iRng);       % posiciones en rango
+  			zdRng = r.zNoisy(1, iRng)';         % distancias en rango
+  			
+  			% LSE LOOP (iterative Method)
+  			while (norm(incr)>r.lseTol) && (iter<r.lseMax)
+    			
+          % compute the prediction and build the Jacobian
+    			for i = 1:r.nVisible
+      			Delta = lmRng(1:2,i)-r.pEstL(1:2); % landmark(i) - estimate
+      			h(i) = norm(Delta);              % predicted distance
+      			jH(i,1) = -Delta(1) / h(i);      % jacobbian in x direction
+      			jH(i,2) = -Delta(2) / h(i);      % jacobbian in y direction
+      			end
     
-			    % utilizar sólo información de los landmarks en rango
-			    iVisible = find(obj.bVisible==1);
-    			Landmarks=obj.posLmarks(:, iVisible);
-    			zd = obj.zNoisy(1, iVisible); % usar sólo sensor de distancia
-    			zd = zd'; % trasponer para que haya una lectura por fila
-    
-    			% LSE LOOP (iterative Method)
-    			while (norm(incr)>obj.lseTol) && (iter<obj.lseMax)
-        			iter = iter+1;        
+    			% Updates
+            R = diag(r.senSigma(1)^2*sqrt(zdRng)); % TODO USAR ZTRUE, MOVER A SENSE
+            error = zdRng - h;  % difference between measurement and prediction
+      			incr = inv(jH'*inv(R)*jH) * jH'*inv(R)*error; % matrix algebra
+      			r.pEstL(1:2) = r.pEstL(1:2)+incr; % update estimate
+            iter = iter+1;
 
-        			% compute the prediction (from current pEstL) and build the Jacobian
-        			for i = 1:obj.nVisible
-            			% Expected distances between the map and the pose estimated
-            			Delta = Landmarks(1:2,i)-obj.pEstL(1:2);  
-            			h(i) = norm(Delta);            % predicted observation
-            			% Jacobian evaluated in pEstL
-            			jH(i,1) = -Delta(1) / h(i);
-            			jH(i,2) = -Delta(2) / h(i);
-        			end
-    
-        			% Para cada landmark, distancia leída vs distancia estimada
-        			error = zd - h;   % difference between measurement and prediction
+			     end % while 			
 
-        			% observation variance grow with the root of the distance
-        			R = diag(obj.senSigma(1)^2*sqrt(zd));
-        
-        			% incr!
-        			incr = inv(jH'*inv(R)*jH) * jH'*inv(R)*error;
-    
-        			% Update Estimation pEstL
-        			obj.pEstL(1:2) = obj.pEstL(1:2)+incr;
-			    end % while 			
-			end
-		end % LSE
+			   end % if 3 or more landmarks
 
-		function obj = FP(obj)
+		  end % LSE
+
+		function r = FP(r)
+    % Estimate position with Filter of Particles
+
 			% utilizamos la baliza elegida al azar
-			landmark = obj.posLmarks(:, obj.iVisible);
-			z = obj.zNoisy(: , obj.iVisible);
+  			slm = r.posLmarks(:, r.iLmFP); 
+  			z = r.zNoisy(: , r.iLmFP);
     		
-    		% calculamos los pesos y los normalizamos
-			W = zeros(1, obj.fpPart);
-    		CovInv = inv(diag(obj.senSigma).^2);
-    		for i = 1:obj.fpPart
-        		zPred = dist_angle(obj.pPart(:,i), landmark);
-        		% exp(-0.5*(zTrue-zPred)'*obj.sensorCovInv*(zTrue-zPred))+0.01;
-        		W(i) = 1/((z-zPred)'*CovInv*(z-zPred)+0.001);
-    		end
+    	% calculamos los pesos y los normalizamos
+  			W = zeros(1, r.fpPart);
+    		CovInv = inv(diag(r.senSigma).^2);
+    		for i = 1:r.fpPart
+      		zPred = dist_angle(r.pPart(:,i), slm);
+      		% exp(-0.5*(zTrue-zPred)'*r.sensorCovInv*(zTrue-zPred))+0.01;
+      		W(i) = 1/((z-zPred)'*CovInv*(z-zPred)+0.001);
+      		end
     		W = W/sum(W);
 
-    		% seleccionamos las mejores partículas
-		    CDF=cumsum(W)/sum(W);
-    		iSelect=rand(obj.fpPart,1);
-    		iNext=interp1(CDF,1:obj.fpPart,iSelect,'nearest','extrap');
-    		obj.pPart = obj.pPart(:, iNext); 
+  		% seleccionamos las mejores partículas
+  	    CDF=cumsum(W)/sum(W);
+    		iSelect=rand(r.fpPart,1);
+    		iNext=interp1(CDF,1:r.fpPart,iSelect,'nearest','extrap');
+    		r.pPart = r.pPart(:, iNext); 
     
-    		% estimamos según el método elegido
-    		if obj.fpMethod == "best" % pose de la mejor partícula
-        		[wMax, iMax] = max(W);
-        		obj.pEstF = obj.pPart(:, iMax); 
-    		elseif obj.fpMethod == "mean" % media de poses de partículas
-    			obj.pEstF(1) = sum(obj.pPart(1, :));
-        		obj.pEstF(2) = sum(obj.pPart(2, :));        
-        		obj.pEstF(3) = circ_mean(obj.pPart(3, :)');
-        	elseif obj.fpMethod == "weight" % media ponderada de poses
-				obj.pEstF(1) = sum(obj.pPart(1, :).*W);
-        		obj.pEstF(2) = sum(obj.pPart(2, :).*W);
-        		obj.pEstF(3) = circ_mean(obj.pPart(3, :)', W');	
-    		end
-			
-		end
+    	% estimamos según el método elegido
+        % pose de la mejor partícula
+    		if r.fpMethod == "best" 
+      		[wMax, iMax] = max(W);
+      		r.pEstF = r.pPart(:, iMax); 
+
+        % media de poses de partículas
+    		elseif r.fpMethod == "mean" 
+    			r.pEstF(1) = sum(r.pPart(1, :));
+      		r.pEstF(2) = sum(r.pPart(2, :));        
+      		r.pEstF(3) = circ_mean(r.pPart(3, :)');
+
+        % media ponderada de poses
+        elseif r.fpMethod == "weight" 
+	    		r.pEstF(1) = sum(r.pPart(1, :).*W);
+      		r.pEstF(2) = sum(r.pPart(2, :).*W);
+      		r.pEstF(3) = circ_mean(r.pPart(3, :)', W');	
+    		  end	
+
+		  end % FP
 
 		function obj = Plot(obj, iOrg, iDst, bLSE, bFP, bPart)
 			% inicialización del mapa
@@ -218,7 +223,7 @@ classdef Robot
 				% oculta las etiquetas de las balizas no visibles para LSE
         		obj.ogrLmarks(2,i).Visible = obj.bVisible(i);
         		% resalta la baliza elegida al azar para el FP
-        		obj.ogrLmarks(1,i).LineWidth=2+2*(obj.iVisible==i);
+        		obj.ogrLmarks(1,i).LineWidth=2+2*(obj.iLmFP==i);
         		%end
     		end
     		
@@ -245,91 +250,120 @@ classdef Robot
     		
 		end
 
-		function obj = Move(obj,uOdom)
-			obj.iHist = obj.iHist + 1;
-
+		function r = Move(r, uOdom, bFix)
+    % Moves the robot, fix if requested and update estimates
+			
 			% mueve las poses real, odométrica y de las partículas
-			obj.pTrue = comp_noisy(obj.pTrue, uOdom, obj.actSigma);
-		    obj.pOdom = comp_odom(obj.pOdom, uOdom);
-		    obj.pPart = comp_noisy(obj.pPart, uOdom, obj.actSigma);
+        r.pTrue = comp_noisy(r.pTrue, uOdom, r.actSigma);
+		    r.pOdom = comp_odom(r.pOdom, uOdom);
+		    r.pPart = comp_noisy(r.pPart, uOdom, r.actSigma);
 
-		    % lee el sensor para cada baliza y actualiza el histórico
-		    obj = obj.Sense();
-		    
-		    % estima la posición a partir de las lecturas del sensor
-		    obj = obj.LSE(uOdom);
-		    obj = obj.FP();
+	    % lee el sensor y actualiza las estimaciones
+		    r = r.Sense();
+		    r = r.LSE(uOdom);
+		    r = r.FP();
 
-		    % actualiza el histórico de poses
-		    obj.pHist(:,obj.iHist) = ... % poses
-		    	[obj.pTrue; obj.pOdom; obj.pEstL;obj.pEstF];    		
-		    
-		    % actualiza el histórico de balizas
-		    obj.bHist(:,obj.iHist) = ... % num visibles, elegida, distancia
-		    	[sum(obj.bVisible); obj.iVisible; obj.zTrue(1, obj.iVisible)];
-		end % Move
+	    % actualiza los históricos de posiciones y balizas
+		    r.iHist = r.iHist + 1;
+        r.pHist(:,r.iHist) = [r.pTrue; r.pOdom; r.pEstL;r.pEstF];
+		    r.bHist(:,r.iHist) = ... 
+		    	[sum(r.bVisible); r.iLmFP; r.zTrue(1, r.iLmFP)];
+		  
+      % corrige la posición moviendo hacia la posición odométrica
+      if bFix
+        % diferencia a posición requerida y cómo llegar a ella
+          delta     = dist_angle(r.pEstF, r.pOdom);
+          u_giro1   = [0;0;delta(2)]; % ángulo hacia odométrica
+          r.pEstF   = comp_odom(r.pEstF, u_giro1);
+          u_avanc   = [delta(1);0;0]; % avance hasta odométrica
+          r.pEstF   = comp_odom(r.pEstF, u_avanc);
+          u_giro2   = [0;0;r.pOdom(3)-r.pEstF(3)]; % corrección ángulo
+          r.pEstF   = comp_odom(r.pEstF, u_giro2);
+                    
+        % mover el robot y volver a sensar
+          r.pTrue = comp_noisy(r.pTrue, u_giro1, r.actSigma);          
+          r.pTrue = comp_noisy(r.pTrue, u_avanc, r.actSigma);          
+          r.pTrue = comp_noisy(r.pTrue, u_giro2, r.actSigma);
+          r       = r.Sense();
+        
+        % mover las partículas sin ruido (desv típica 0) 
+          r.pPart   = comp_noisy(r.pPart, u_giro1, 0); % r.actSigma);
+          r.pPart   = comp_noisy(r.pPart, u_avanc, 0); % r.actSigma);
+          r.pPart   = comp_noisy(r.pPart, u_giro2, 0); % r.actSigma);
+
+        % reestimar posición con FP
+          r = r.FP();
+
+        % actualiza los históricos de posiciones y balizas
+          r.fHist(r.iHist) = 1;  % el siguiente paso es una corrección
+          r.iHist = r.iHist + 1;
+          r.pHist(:,r.iHist) = [r.pTrue; r.pOdom; r.pEstL;r.pEstF];
+          r.bHist(:,r.iHist) = ... 
+            [sum(r.bVisible); r.iLmFP; r.zTrue(1, r.iLmFP)];
+        end % corregir posición
+
+    end % Move
 
 		function obj = Fix(obj)
-			obj.iHist = obj.iHist + 1;
-
-	        delta = dist_angle(obj.pEstF, obj.pOdom);
-	        %F0 = obj.pEstF
-	        %O0 = obj.pOdom
-	        %T0 = obj.pTrue
-	        %D0 = (obj.pOdom-obj.pEstF)
-        	line([obj.pEstF(1), obj.pOdom(1)], [obj.pEstF(2), obj.pOdom(2)],...
+			
+	        delta = dist_angle(r.pEstF, r.pOdom);
+	        %F0 = r.pEstF
+	        %O0 = r.pOdom
+	        %T0 = r.pTrue
+	        %D0 = (r.pOdom-r.pEstF)
+        	line([r.pEstF(1), r.pOdom(1)], [r.pEstF(2), r.pOdom(2)],...
         		'LineStyle',':', 'Color','red', 'LineWidth',2);
                     
 	        % giro del robot y partículas hacia la posición odométrica
 	        u_giro1 	= [0 0 delta(2)]'; % correción ángulo hacia odométrica
-	        obj.pTrue 	= comp_noisy(obj.pTrue, u_giro1, obj.actSigma);
-	        obj.pPart 	= comp_noisy(obj.pPart, u_giro1, 0); % obj.actSigma);
-	        %obj.pEstL 	= comp_odom(obj.pEstL, u_giro1);
-	        obj.pEstF 	= comp_odom(obj.pEstF, u_giro1);
+	        r.pTrue 	= comp_noisy(r.pTrue, u_giro1, r.actSigma);
+	        r.pPart 	= comp_noisy(r.pPart, u_giro1, 0); % r.actSigma);
+	        %r.pEstL 	= comp_odom(r.pEstL, u_giro1);
+	        r.pEstF 	= comp_odom(r.pEstF, u_giro1);
         
 	        % avance hasta la posición odométrica
 	        u_avanc 	= [delta(1) 0 0]'; % avance hasta odométrica
-	        obj.pTrue 	= comp_noisy(obj.pTrue, u_avanc, obj.actSigma);
-	        obj.pPart 	= comp_noisy(obj.pPart, u_avanc, 0); % obj.actSigma);
-	        %obj.pEstL 	= comp_odom(obj.pEstL, u_avanc);
-	        obj.pEstF 	= comp_odom(obj.pEstF, u_avanc);
+	        r.pTrue 	= comp_noisy(r.pTrue, u_avanc, r.actSigma);
+	        r.pPart 	= comp_noisy(r.pPart, u_avanc, 0); % r.actSigma);
+	        %r.pEstL 	= comp_odom(r.pEstL, u_avanc);
+	        r.pEstF 	= comp_odom(r.pEstF, u_avanc);
         
 	        % giro hacia la pose odométrica
-	        u_giro2 	= [0 0 obj.pOdom(3)-obj.pEstF(3)]';
-	        obj.pTrue 	= comp_noisy(obj.pTrue, u_giro2, obj.actSigma);
-	        obj.pPart 	= comp_noisy(obj.pPart, u_giro2, 0); % obj.actSigma);
-	    	%obj.pEstL	= comp_odom(obj.pEstL, u_giro2);
-	        obj.pEstF 	= comp_odom(obj.pEstF, u_giro2);
+	        u_giro2 	= [0 0 r.pOdom(3)-r.pEstF(3)]';
+	        r.pTrue 	= comp_noisy(r.pTrue, u_giro2, r.actSigma);
+	        r.pPart 	= comp_noisy(r.pPart, u_giro2, 0); % r.actSigma);
+	    	%r.pEstL	= comp_odom(r.pEstL, u_giro2);
+	        r.pEstF 	= comp_odom(r.pEstF, u_giro2);
 
-	        obj = obj.FP();
+	        obj = r.FP();
 
-	        %F1 = obj.pEstF
-	        %O1 = obj.pOdom
-	        %T1 = obj.pTrue
-	        %D1 = (obj.pOdom-obj.pEstF)
+	        %F1 = r.pEstF
+	        %O1 = r.pOdom
+	        %T1 = r.pTrue
+	        %D1 = (r.pOdom-r.pEstF)
 
 	        % movemos todas las estimaciones ajustando la diferencia
-	        %delta = (obj.pOdom-obj.pEstF);
-	        %obj.pEstL = obj.pEstL+(obj.pOdom-obj.pEstF);
-	        %obj.pPart = obj.pPart+(obj.pOdom-obj.pEstF);
+	        %delta = (r.pOdom-r.pEstF);
+	        %r.pEstL = r.pEstL+(r.pOdom-r.pEstF);
+	        %r.pPart = r.pPart+(r.pOdom-r.pEstF);
 	        
 	        % estimamos la nueva posición LSE y FP
-	        %obj = obj.LSE(uOdom);
-	        %obj = obj.Sense();
-	        %obj = obj.FP();
+	        %obj = r.LSE(uOdom);
+	        %obj = r.Sense();
+	        %obj = r.FP();
 
 	        % estimamos la posición mediante filtro de partículas
 	        %[xEst, Best, bVisible] = est_fp(Robot, Mapa, zNoisy, 1);
-	        %obj.pEstF = xEst; % nueva posición del robot
-	        %obj.pPart = Best; % nueva posición de partículas seleccionadas
+	        %r.pEstF = xEst; % nueva posición del robot
+	        %r.pPart = Best; % nueva posición de partículas seleccionadas
 
 		    % actualiza el histórico de poses
-		    obj.pHist(:,obj.iHist) = ... % poses
-		    	[obj.pTrue; obj.pOdom; obj.pEstL;obj.pEstF];    		
+		    r.pHist(:,r.iHist) = ... % poses
+		    	[r.pTrue; r.pOdom; r.pEstL;r.pEstF];    		
 		    
 		    % actualiza el histórico de balizas
-		    obj.bHist(:,obj.iHist) = ... % num visibles, elegida, distancia
-		    	[sum(obj.bVisible); obj.iVisible; obj.zTrue(1, obj.iVisible)];
+		    r.bHist(:,r.iHist) = ... % num visibles, elegida, distancia
+		    	[sum(r.bVisible); r.iLmFP; r.zTrue(1, r.iLmFP)];
 
 		end
 
