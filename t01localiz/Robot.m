@@ -68,8 +68,12 @@ classdef Robot
 				obj.pHist(:,obj.iHist) = [obj.pTrue; obj.pOdom; obj.pEstL; obj.pEstF];
 
 			% Precición y rango de actuadores y sensores
-				obj.actSigma 	= [0.5 0.5 0.5*pi/180]'; 
-				obj.senSigma 	= [0.05 0.5*pi/180]'; 
+				%obj.actSigma 	= [0.5 0.5 0.5*pi/180]'; 
+				%obj.actSigma 	= [0.1 0.1 5*pi/180]'; 
+				obj.actSigma 	= [0.2 0.2 10*pi/180]'; 
+				%obj.senSigma 	= [0.05 0.5*pi/180]'; 
+				%obj.senSigma 	= [0.1 5*pi/180]'; 
+				obj.senSigma 	= [0.2 10*pi/180]'; 
 				obj.senRange 	= [20 60*pi/180]'; 
 
 			% lectura y visibilidad de balizas
@@ -279,23 +283,25 @@ classdef Robot
 	        % giro del robot y partículas hacia la posición odométrica
 	        u_giro1 	= [0 0 delta(2)]'; % correción ángulo hacia odométrica
 	        obj.pTrue 	= comp_noisy(obj.pTrue, u_giro1, obj.actSigma);
-	        %obj.pPart 	= comp_noisy(obj.pPart, u_giro1, 0); % obj.actSigma);
+	        obj.pPart 	= comp_noisy(obj.pPart, u_giro1, 0); % obj.actSigma);
 	        %obj.pEstL 	= comp_odom(obj.pEstL, u_giro1);
 	        obj.pEstF 	= comp_odom(obj.pEstF, u_giro1);
         
 	        % avance hasta la posición odométrica
 	        u_avanc 	= [delta(1) 0 0]'; % avance hasta odométrica
 	        obj.pTrue 	= comp_noisy(obj.pTrue, u_avanc, obj.actSigma);
-	        %obj.pPart 	= comp_noisy(obj.pPart, u_avanc, 0); % obj.actSigma);
+	        obj.pPart 	= comp_noisy(obj.pPart, u_avanc, 0); % obj.actSigma);
 	        %obj.pEstL 	= comp_odom(obj.pEstL, u_avanc);
 	        obj.pEstF 	= comp_odom(obj.pEstF, u_avanc);
         
 	        % giro hacia la pose odométrica
 	        u_giro2 	= [0 0 obj.pOdom(3)-obj.pEstF(3)]';
 	        obj.pTrue 	= comp_noisy(obj.pTrue, u_giro2, obj.actSigma);
-	        %obj.pPart 	= comp_noisy(obj.pPart, u_giro2, 0); % obj.actSigma);
+	        obj.pPart 	= comp_noisy(obj.pPart, u_giro2, 0); % obj.actSigma);
 	    	%obj.pEstL	= comp_odom(obj.pEstL, u_giro2);
 	        obj.pEstF 	= comp_odom(obj.pEstF, u_giro2);
+
+	        obj = obj.FP();
 
 	        %F1 = obj.pEstF
 	        %O1 = obj.pOdom
@@ -304,8 +310,8 @@ classdef Robot
 
 	        % movemos todas las estimaciones ajustando la diferencia
 	        %delta = (obj.pOdom-obj.pEstF);
-	        obj.pEstL = obj.pEstL+(obj.pOdom-obj.pEstF);
-	        obj.pPart = obj.pPart+(obj.pOdom-obj.pEstF);
+	        %obj.pEstL = obj.pEstL+(obj.pOdom-obj.pEstF);
+	        %obj.pPart = obj.pPart+(obj.pOdom-obj.pEstF);
 	        
 	        % estimamos la nueva posición LSE y FP
 	        %obj = obj.LSE(uOdom);
@@ -336,9 +342,8 @@ classdef Robot
 			errDistL = zeros(1, iMax);
 			errDistF = zeros(1, iMax);
 
-			% variables para errores en ángulos Odométrico, Lse y Fp
+			% variables para errores en ángulos Odométrico y Fp
 			errAnguO = zeros(1, iMax);
-			errAnguL = zeros(1, iMax);
 			errAnguF = zeros(1, iMax);
 
 			% cálculo de errores den distancias y ángulos
@@ -347,9 +352,8 @@ classdef Robot
 			    errDistL(i) = norm(obj.pHist(1,i)-obj.pHist(7,i),obj.pHist(2,i)-obj.pHist(8,i));
 			    errDistF(i) = norm(obj.pHist(1,i)-obj.pHist(10,i),obj.pHist(2,i)-obj.pHist(11,i));
 
-			    errAnguO(i) = angle_sum(obj.pHist(3,i), obj.pHist(6,i))*180/pi;
-			    errAnguL(i) = angle_sum(obj.pHist(3,i), obj.pHist(9,i))*180/pi;
-			    errAnguF(i) = angle_sum(obj.pHist(3,i), obj.pHist(11,i))*180/pi;
+			    errAnguO(i) = angle_sum(obj.pHist(3,i), -obj.pHist(6,i))*180/pi;
+			    errAnguF(i) = angle_sum(obj.pHist(3,i), -obj.pHist(12,i))*180/pi;
 			end
 
 			% errores en distancia
@@ -364,42 +368,41 @@ classdef Robot
 			plot(errDistF,'c');m=mean(errDistF);line([1 iMax], [m, m]);
 			title('FP Error - Distance');
 
-			% errores en ángulos
-			figure; hold on; set(gcf, 'Visible', 'on');
-			subplot(311); 
-			plot(errAnguO,'b');m=mean(errAnguO);line([1 iMax], [m, m]);
-			title('Odometric Error - Angle');
-			subplot(312); 
-			plot(errAnguL,'g');m=mean(errAnguL);line([1 iMax], [m, m]);
-			title('LSE Error - Angle');
-			subplot(313); 
-			plot(errAnguF,'c');m=mean(errAnguF);line([1 iMax], [m, m]);
-			title('FP Error - Angle');
-
 			% detalle LSE
 			figure; hold on; set(gcf, 'Visible', 'on');
 			subplot(311);
+			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
+			title('Odometric Error - Distance');
+			subplot(312);
 			plot(errDistL,'g');m=mean(errDistL);line([1 iMax], [m, m]);
 			title('LSE Error - Distance');
-			subplot(312);
-			plot(errAnguL,'g');m=mean(errAnguL);line([1 iMax], [m, m]);
-			title('LSE Error - Angle');
 			subplot(313);
 			plot(obj.bHist(1,rng),'r');m=2.5;line([1 iMax], [m, m]);
 			title('LSE Error - # Visible sensors');
 
-
 			% detalle FP
 			figure; hold on; set(gcf, 'Visible', 'on');
 			subplot(311);
+			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
+			title('Odometric Error - Distance');
+			subplot(312);
 			plot(errDistF,'c');m=mean(errDistF);line([1 iMax], [m, m]);
 			title('FP Error - Distance');
-			subplot(312);
-			plot(errAnguF,'c');m=mean(errAnguF);line([1 iMax], [m, m]);
-			title('FP Error - Angle');
 			subplot(313);
 			plot(obj.bHist(3,rng),'r');m=mean(obj.bHist(3,rng));line([1 iMax], [m, m]);
 			title('FP Error - # Distance to random landmark');
+
+			% errores en ángulos
+			figure; hold on; set(gcf, 'Visible', 'on');
+			subplot(311); 
+			plot(obj.pHist(6, rng)*180/pi,'b');
+			title('Odometric angle (Desired)');
+			subplot(312); 
+			plot(errAnguO,'b');m=mean(errAnguO);line([1 iMax], [m, m]);
+			title('Odometric angleº error (True - Desired)');
+			subplot(313); 
+			plot(errAnguF,'c');m=mean(errAnguF);line([1 iMax], [m, m]);
+			title('FP angleº error (True - Estimated)');
 
 		end
 

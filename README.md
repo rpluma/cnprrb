@@ -7,7 +7,7 @@ Teoría
 1. Presentación 21/21 -> completada
 2. Mobile robotics I 42/43 -> pendiente ejercicio 5 # 42
 3. Mobile robotics 23/24 II -> pendiente ejercicio 3 # 12 
-4. Mobile robotics III -> pendiente
+4. Mobile robotics III -> completada
 5. ROS2 Architecture I -> pendiente
 6. Linux Commands -> pendiente
 7. ROS2 Architecture II -> pendiente
