@@ -9,7 +9,7 @@ classdef Robot
 		fpPart        = 100;      % Number of particles
 		fpMethod      = 'weight'; % Estimation method: best, mean, weight
 		maxHist       = 100;      % Max number of movements
-	end
+	  end % constant prperties
 
 	properties(Access = public)
 		% Mapa y landmarks
@@ -42,7 +42,8 @@ classdef Robot
 			bVisible   % balizas dentro del rango y distancia
 			nVisible   % número de balizas en rango del sensor
 			iLmFP      % baliza elegida al azar para el FP
-	end
+	
+    end % properties
 	
 	methods
 		function r = Robot(mapSize, numLmarks, pose0)
@@ -53,8 +54,7 @@ classdef Robot
 				r.ogrMap    = 0;
 				r.numLmarks = numLmarks;
 				r.posLmarks = mapSize*rand(2, numLmarks)-mapSize/2;
-				r.ogrLmarks = gobjects(2, numLmarks);
-				%r.ogrLegend = 0;
+				r.ogrLmarks = gobjects(1, numLmarks);
 			
 			% Poses 
 				r.pTrue 		= pose0;
@@ -190,62 +190,104 @@ classdef Robot
 
 		  end % FP
 
-		function obj = Plot(obj, iOrg, iDst, bLSE, bFP, bPart)
+    function r = NewPlot(r, bLSE, bFP, bPart)
+      % Visualizar la habitación
+        hold off
+        mg = r.mapSize*0.75;
+        x0 = r.pTrue(1);
+        y0 = r.pTrue(2);
+        plot([-mg mg mg -mg -mg], [-mg -mg mg mg, -mg], '--r', 'DisplayName','Room');
+        hold on
+
+      % Visualizar las balizas
+        hold on; grid on; axis equal;       
+        plot(r.posLmarks(1,:),r.posLmarks(2,:),'dr', 'DisplayName','Landmark');
+        for k = 1:r.numLmarks
+            r.ogrLmarks(1,k) = text(r.posLmarks(1,k)+1,r.posLmarks(2,k), sprintf('L%d',k) );
+        end
+
+      % Movimiento real y odométricos
+        iRng = 1:r.iHist;
+        plot(r.pHist(1,iRng), r.pHist(2,iRng), 'kp-', 'DisplayName','True position');
+        plot(r.pHist(4,iRng), r.pHist(5,iRng), 'b.-', 'DisplayName','Odomtriy');
+
+      % Estimaciones LSE y FP
+      if bLSE 
+          plot(r.pHist(7,iRng), r.pHist(8,iRng), 'mo','DisplayName','LSE');
+          for i=1:r.numLmarks
+            r.ogrLmarks(1,i).Visible = r.bVisible(i);
+            end      
+        end
+
+      if bFP
+        plot(r.pHist(10,iRng), r.pHist(11,iRng),'co','DisplayName','FP');
+        end
+
+      if bPart
+        part=plot(r.pPart(1, :), r.pPart(2, :), '.','DisplayName','Particles');
+        set(part, 'MarkerSize', 5, 'Color', [rand rand rand]);
+        end  
+
+      legend
+        
+        %a = annotation('arrow') ;
+        %a.Parent = gca; 
+        %a.Position = [-10,2,2,2];
+      end % NewPlot
+		
+    function r = Plot(r, iOrg, iDst, bLSE, bFP, bPart)
 			% inicialización del mapa
-			if (obj.ogrMap==0)
-				obj.ogrMap = true;
+			if (r.ogrMap==0)
+				r.ogrMap = true;
 				figure;
 				set(gcf,'Visible','on');    % pup-up window
-				mg = obj.mapSize*0.5;
-				x0 = obj.pTrue(1);
-				y0 = obj.pTrue(2);
+				mg = r.mapSize*0.5;
+				x0 = r.pTrue(1);
+				y0 = r.pTrue(2);
 
-				% primer objeto de cada tipo para la leyenda
-				l1= plot([-mg mg mg -mg -mg], [-mg -mg mg mg, -mg], '--r', 'DisplayName','Room');
+				% primer reto de cada tipo para la leyenda
+				plot([-mg mg mg -mg -mg], [-mg -mg mg mg, -mg], '--r', 'DisplayName','Room');
 				hold on; grid on; axis equal;				
-				% obj.ogrLmarks(1,1) = plot(obj.posLmarks(1,1),obj.posLmarks(2,1),'sm', 'DisplayName','Landmark');
-				l3=plot([x0 x0], [y0 y0], 'kx-','LineWidth',2, 'DisplayName','True position');
-				l4=plot([x0 x0], [y0 y0], 'go-','LineWidth',2, 'DisplayName','LSE Estimation');
-				l5=plot([x0 x0], [y0 y0], 'mo-','LineWidth',2, 'DisplayName','LSE <3 landmarks');
-				l6=plot([x0 x0], [y0 y0], 'co-','LineWidth',2, 'DisplayName','FP Estimation');
-			    % obj.ogrLegend = [l1, obj.ogrLmarks(1,1), l3, l4, l5, l6];
-
-			    % resto de landmarks
-			    %obj.ogrLmarks(2,1) = text(obj.posLmarks(1,1)+1,obj.posLmarks(2,1), sprintf('L%d',1) );
-			    for k = 1:obj.numLmarks
-			        obj.ogrLmarks(1,k) = plot(obj.posLmarks(1,k),obj.posLmarks(2,k),'sm', 'DisplayName','Landmark');
-			        obj.ogrLmarks(2,k) = text(obj.posLmarks(1,k)+1,obj.posLmarks(2,k), sprintf('L%d',k) );
-			    end
+				plot(r.posLmarks(1,:),r.posLmarks(2,:),'sm', 'DisplayName','Landmark');
+		    for k = 1:r.numLmarks
+		        r.ogrLmarks(1,k) = text(r.posLmarks(1,k)+1,r.posLmarks(2,k), sprintf('L%d',k) );
+		    end
 			end
 
-			% Visualización de balizas
-			for i=1:obj.numLmarks
-				% oculta las etiquetas de las balizas no visibles para LSE
-        		obj.ogrLmarks(2,i).Visible = obj.bVisible(i);
-        		% resalta la baliza elegida al azar para el FP
-        		obj.ogrLmarks(1,i).LineWidth=2+2*(obj.iLmFP==i);
-        		%end
-    		end
-    		
+			% Ocultar las etiquetas de las balizas no visibles para LSE
+			for i=1:r.numLmarks
+				r.ogrLmarks(1,i).Visible = r.bVisible(i);
+        end
+    	
+      % Origen y destino del movimiento de partículas
+      o=r.iHist-1; d=r.iHist; 
+      if o < 1
+        o=1
+      end
+
+      % Visualizar las estimaciones del LSE con 3 o más balizas
+      %if bLSE && r.bHist(1,d) >= 3
+      %  plot(r.pHist(7,o:d), r.pHist(8,o:d), 'go-','LineWidth',2); % LSE
+
     		% Trazado de movimiento de las poses True/Odom
     		for i=iOrg:(iDst-1)
-    			if bLSE % Visualizar las estimaciones del LSE
-    				if obj.bHist(1,i) >= 3 % >= 3 balizas => estimación LSE verde
-    					plot(obj.pHist(7,i:i+1), obj.pHist(8,i:i+1), 'go-','LineWidth',2); % LSE
+    			if bLSE 
+    				if r.bHist(1,i) >= 3 % >= 3 balizas => estimación LSE verde
+    					
     				else % < 3 => estimación no LSE (rojo)
-    					plot(obj.pHist(7,i:i+1), obj.pHist(8,i:i+1), 'mo-','LineWidth',2); % <3 balizas
+    					plot(r.pHist(7,i:i+1), r.pHist(8,i:i+1), 'mo-','LineWidth',2); % <3 balizas
     				end
     			end
     			if bPart % visualizar las partículas individuales
-			        part=plot(obj.pPart(1, :), obj.pPart(2, :), '.');
+			        part=plot(r.pPart(1, :), r.pPart(2, :), '.');
 			        set(part, 'MarkerSize', 5, 'Color', [rand rand rand]);
 				end
     			if bFP % visualizar las estimaciones del FP
-					plot(obj.pHist(10,i:i+1), obj.pHist(11,i:i+1), 'co-','LineWidth',2); % FP
+					plot(r.pHist(10,i:i+1), r.pHist(11,i:i+1), 'co-','LineWidth',2); % FP
     			end
 
-    			plot(obj.pHist(1,i:i+1), obj.pHist(2,i:i+1), 'kx-'); % True	
-    			plot(obj.pHist(4,i:i+1), obj.pHist(5,i:i+1), 'b+-'); % Odom
+    			plot(r.pHist(1,i:i+1), r.pHist(2,i:i+1), 'kx-'); % True	
+    			plot(r.pHist(4,i:i+1), r.pHist(5,i:i+1), 'b+-'); % Odom
     		end
     		
 		end
@@ -287,12 +329,12 @@ classdef Robot
           r       = r.Sense();
         
         % mover las partículas sin ruido (desv típica 0) 
-          r.pPart   = comp_noisy(r.pPart, u_giro1, 0); % r.actSigma);
-          r.pPart   = comp_noisy(r.pPart, u_avanc, 0); % r.actSigma);
-          r.pPart   = comp_noisy(r.pPart, u_giro2, 0); % r.actSigma);
+          r.pPart   = comp_odom(r.pPart, u_giro1);% , 0); % r.actSigma);
+          r.pPart   = comp_odom(r.pPart, u_avanc);% , 0); % r.actSigma);
+          r.pPart   = comp_odom(r.pPart, u_giro2);% , 0); % r.actSigma);
 
         % reestimar posición con FP
-          r = r.FP();
+          %r = r.FP();
 
         % actualiza los históricos de posiciones y balizas
           r.fHist(r.iHist) = 1;  % el siguiente paso es una corrección
@@ -305,9 +347,9 @@ classdef Robot
     end % Move
 
 
-		function PlotErrors(obj)
-			iMax = obj.iHist;
-			rng = 1:obj.iHist;
+		function PlotErrors(r, bDist, bLSE, bFP, bAng)
+			iMax = r.iHist;
+			rng = 1:r.iHist;
 
 			% variables para errores en distancia Odométrico, Lse y Fp
 			errDistO = zeros(1, iMax);
@@ -319,62 +361,72 @@ classdef Robot
 			errAnguF = zeros(1, iMax);
 
 			% cálculo de errores den distancias y ángulos
-			for i=1:obj.iHist
-			    errDistO(i) = norm(obj.pHist(1,i)-obj.pHist(4,i),obj.pHist(2,i)-obj.pHist(5,i));
-			    errDistL(i) = norm(obj.pHist(1,i)-obj.pHist(7,i),obj.pHist(2,i)-obj.pHist(8,i));
-			    errDistF(i) = norm(obj.pHist(1,i)-obj.pHist(10,i),obj.pHist(2,i)-obj.pHist(11,i));
+			for i=1:r.iHist
+			    errDistO(i) = norm(r.pHist(1,i)-r.pHist(4,i),r.pHist(2,i)-r.pHist(5,i));
+			    errDistL(i) = norm(r.pHist(1,i)-r.pHist(7,i),r.pHist(2,i)-r.pHist(8,i));
+			    errDistF(i) = norm(r.pHist(1,i)-r.pHist(10,i),r.pHist(2,i)-r.pHist(11,i));
 
-			    errAnguO(i) = angle_sum(obj.pHist(3,i), -obj.pHist(6,i))*180/pi;
-			    errAnguF(i) = angle_sum(obj.pHist(3,i), -obj.pHist(12,i))*180/pi;
+			    errAnguO(i) = angle_sum(r.pHist(3,i), -r.pHist(6,i))*180/pi;
+			    errAnguF(i) = angle_sum(r.pHist(3,i), -r.pHist(12,i))*180/pi;
 			end
 
 			% errores en distancia
-			figure; hold on; set(gcf, 'Visible', 'on');
-			subplot(311); 
-			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
-			title('Odometric Error - Distance');
-			subplot(312); 
-			plot(errDistL,'g');m=mean(errDistL);line([1 iMax], [m, m]);
-			title('LSE Error - Distance');
-			subplot(313); 
-			plot(errDistF,'c');m=mean(errDistF);line([1 iMax], [m, m]);
-			title('FP Error - Distance');
+      if bDist
+  			figure; hold on; set(gcf, 'Visible', 'on');
+  			subplot(311); 
+  			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
+  			title('Odometric Error - Distance');
+  			subplot(312); 
+  			plot(errDistL,'g');m=mean(errDistL);line([1 iMax], [m, m]);
+  			title('LSE Error - Distance');
+  			subplot(313); 
+  			plot(errDistF,'c');m=mean(errDistF);line([1 iMax], [m, m]);
+  			title('FP Error - Distance');
+      end
 
 			% detalle LSE
-			figure; hold on; set(gcf, 'Visible', 'on');
-			subplot(311);
-			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
-			title('Odometric Error - Distance');
-			subplot(312);
-			plot(errDistL,'g');m=mean(errDistL);line([1 iMax], [m, m]);
-			title('LSE Error - Distance');
-			subplot(313);
-			plot(obj.bHist(1,rng),'r');m=2.5;line([1 iMax], [m, m]);
-			title('LSE Error - # Visible sensors');
+      if bLSE
+  			figure; hold on; set(gcf, 'Visible', 'on');
+  			subplot(311);
+  			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
+  			title('Odometric Error - Distance');
+  			subplot(312);
+  			plot(errDistL,'g');m=mean(errDistL);line([1 iMax], [m, m]);
+  			title('LSE Error - Distance');
+  			subplot(313);
+  			plot(r.bHist(1,rng),'r');m=2.5;line([1 iMax], [m, m]);
+  			title('LSE Error - # Visible sensors');
+      end
 
 			% detalle FP
-			figure; hold on; set(gcf, 'Visible', 'on');
-			subplot(311);
-			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
-			title('Odometric Error - Distance');
-			subplot(312);
-			plot(errDistF,'c');m=mean(errDistF);line([1 iMax], [m, m]);
-			title('FP Error - Distance');
-			subplot(313);
-			plot(obj.bHist(3,rng),'r');m=mean(obj.bHist(3,rng));line([1 iMax], [m, m]);
-			title('FP Error - # Distance to random landmark');
+      if bFP
+  			figure; hold on; set(gcf, 'Visible', 'on');
+  			subplot(311);
+  			plot(errDistO,'b');m=mean(errDistO);line([1 iMax], [m, m]);
+  			title('Odometric Error - Distance');
+  			subplot(312);
+  			plot(errDistF,'c');m=mean(errDistF);line([1 iMax], [m, m]);
+  			title('FP Error - Distance');
+  			subplot(313);
+  			%plot(r.bHist(3,rng),'r');m=mean(r.bHist(3,rng));line([1 iMax], [m, m]);
+  			%title('FP Error - # Distance to random landmark');
+        plot(errAnguF,'c');m=mean(errAnguF);line([1 iMax], [m, m]);
+        title('FP angleº error (True - Estimated)');
+      end
 
 			% errores en ángulos
-			figure; hold on; set(gcf, 'Visible', 'on');
-			subplot(311); 
-			plot(obj.pHist(6, rng)*180/pi,'b');
-			title('Odometric angle (Desired)');
-			subplot(312); 
-			plot(errAnguO,'b');m=mean(errAnguO);line([1 iMax], [m, m]);
-			title('Odometric angleº error (True - Desired)');
-			subplot(313); 
-			plot(errAnguF,'c');m=mean(errAnguF);line([1 iMax], [m, m]);
-			title('FP angleº error (True - Estimated)');
+      if bAng
+  			figure; hold on; set(gcf, 'Visible', 'on');
+  			subplot(311); 
+  			plot(r.pHist(6, rng)*180/pi,'b');
+  			title('Odometric angle (Desired)');
+  			subplot(312); 
+  			plot(errAnguO,'b');m=mean(errAnguO);line([1 iMax], [m, m]);
+  			title('Odometric angleº error (True - Desired)');
+  			subplot(313); 
+  			plot(errAnguF,'c');m=mean(errAnguF);line([1 iMax], [m, m]);
+  			title('FP angleº error (True - Estimated)');
+      end
 
 		end
 
