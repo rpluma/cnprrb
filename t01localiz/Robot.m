@@ -190,7 +190,7 @@ classdef Robot
 
 		  end % FP
 
-    function r = NewPlot(r, bLSE, bFP, bPart)
+    function r = Plot(r, bLSE, bFP, bPart)
       % Visualizar la habitación
         hold off
         mg = r.mapSize*0.75;
@@ -230,67 +230,9 @@ classdef Robot
 
       legend
         
-        %a = annotation('arrow') ;
-        %a.Parent = gca; 
-        %a.Position = [-10,2,2,2];
+        %a = annotation('arrow'); a.Parent = gca; a.Position = [-4,-3,-1,0];
       end % NewPlot
 		
-    function r = Plot(r, iOrg, iDst, bLSE, bFP, bPart)
-			% inicialización del mapa
-			if (r.ogrMap==0)
-				r.ogrMap = true;
-				figure;
-				set(gcf,'Visible','on');    % pup-up window
-				mg = r.mapSize*0.5;
-				x0 = r.pTrue(1);
-				y0 = r.pTrue(2);
-
-				% primer reto de cada tipo para la leyenda
-				plot([-mg mg mg -mg -mg], [-mg -mg mg mg, -mg], '--r', 'DisplayName','Room');
-				hold on; grid on; axis equal;				
-				plot(r.posLmarks(1,:),r.posLmarks(2,:),'sm', 'DisplayName','Landmark');
-		    for k = 1:r.numLmarks
-		        r.ogrLmarks(1,k) = text(r.posLmarks(1,k)+1,r.posLmarks(2,k), sprintf('L%d',k) );
-		    end
-			end
-
-			% Ocultar las etiquetas de las balizas no visibles para LSE
-			for i=1:r.numLmarks
-				r.ogrLmarks(1,i).Visible = r.bVisible(i);
-        end
-    	
-      % Origen y destino del movimiento de partículas
-      o=r.iHist-1; d=r.iHist; 
-      if o < 1
-        o=1
-      end
-
-      % Visualizar las estimaciones del LSE con 3 o más balizas
-      %if bLSE && r.bHist(1,d) >= 3
-      %  plot(r.pHist(7,o:d), r.pHist(8,o:d), 'go-','LineWidth',2); % LSE
-
-    		% Trazado de movimiento de las poses True/Odom
-    		for i=iOrg:(iDst-1)
-    			if bLSE 
-    				if r.bHist(1,i) >= 3 % >= 3 balizas => estimación LSE verde
-    					
-    				else % < 3 => estimación no LSE (rojo)
-    					plot(r.pHist(7,i:i+1), r.pHist(8,i:i+1), 'mo-','LineWidth',2); % <3 balizas
-    				end
-    			end
-    			if bPart % visualizar las partículas individuales
-			        part=plot(r.pPart(1, :), r.pPart(2, :), '.');
-			        set(part, 'MarkerSize', 5, 'Color', [rand rand rand]);
-				end
-    			if bFP % visualizar las estimaciones del FP
-					plot(r.pHist(10,i:i+1), r.pHist(11,i:i+1), 'co-','LineWidth',2); % FP
-    			end
-
-    			plot(r.pHist(1,i:i+1), r.pHist(2,i:i+1), 'kx-'); % True	
-    			plot(r.pHist(4,i:i+1), r.pHist(5,i:i+1), 'b+-'); % Odom
-    		end
-    		
-		end
 
 		function r = Move(r, uOdom, bFix)
     % Moves the robot, fix if requested and update estimates
