@@ -245,3 +245,126 @@ ros2 launch fisrt_pkg file.launch
 
 
 ## Services
+
+Service configuration: srv/**S**tart.srv
+```
+int64 A
+int64 B
+---
+int64 Sum
+```
+Service configuration: srv/**S**top.srv
+```
+string reason
+---
+int32[5] movements
+int32 total
+```
+
+
+Server configuration: package.xml
+```
+<build_depend>rosidl_default_generators</build_depend>
+<exec_depend>rosidl_default_runtime</exec_depend>
+<member_of_group>rosidl_interface_packages</member_of_group>
+```
+
+Service config: CmakeList.txt (antes de ament_package())
+```
+find_package(rosidl_default_generators REQUIRED)
+rosidl_genarate_interfaces(${PROJECT_NAME}
+"srv/Start.srv"
+"srv/Stop.srv"
+)
+
+...
+ament_package()
+...
+
+... add_executable
+...
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
+"rosidl_typesupport_cpp")
+target_link_libraries(actuator "${cpp_typesupport_target}")
+```
+
+Compilar para generar start.hpp
+
+nodo: actuator.hpp
+```
+...
+#include "first_pkg/srv/start.hpp"
+#include "first_pkg/srv/stop.hpp"
+Class Actuator : public rclcpp :: Node
+...
+private:
+	bool active; // variable adicional de ejemplo del servicio
+	int movments[5]; // variable adicional para ejmplo stop
+	rclcpp::Service<first_pkg::srv::Start>::SharedPtr server_start_;
+	void handle_start_service(
+		const std::shared_ptr<rmw_request_id_t> request_header,
+		const std::shared_ptr<first_pkg::srv::Start::Request> request,
+		std::shared_ptr<first_pkg::srv::Start::Response> response);
+		)
+	void handle_stop_service(
+		const std::shared_ptr<rmw_request_id_t> request_header,
+		const std::shared_ptr<first_pkg::srv::Stop::Request> request,
+		std::shared_ptr<first_pkg::srv::Stop::Response> response);
+		)
+```
+
+nodo: actuator.cpp
+```
+using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
+
+Actuator::Actuator():Node("actuator")
+{
+	server_start_ = this->create_service<first_pkg::srv::Start>
+	("start_service", std::bind(&Actuator::handle_start_service, this, _1, _2, _3));
+	active = false;
+
+...
+
+void Actuator::handle_start_service(
+	const std::shared_ptr<rmw_request_id_t> request_header,
+	const std::shared_ptr<first_pkg::srv::Start::Request> request,
+	std::shared_ptr<first_pkg::srv::Start::Response> response)	
+{
+	RCLCPP_INFO(this->get_logger(), "Service started");
+	active=true;
+}
+
+
+void Actuator::handle_stop_service(
+	const std::shared_ptr<rmw_request_id_t> request_header,
+	const std::shared_ptr<first_pkg::srv::Start::Request> request,
+	std::shared_ptr<first_pkg::srv::Start::Response> response)	
+{
+	RCLCPP_INFO(this->get_logger(), "Service stopped");
+	RCLCPP_INFO(this->get_logger(), "Reason %s",request->reason.c_str()");	
+	active=false;
+	for (auto i=0;i<5;i++)
+		response->movements[i]=movements[i];
+}
+
+
+
+void Actuator::execute_command(const...)
+{
+	if (active)
+	{	
+...
+
+if(mst->data=="stop") {... movements[0]++}
+
+```
+
+Invocación 
+```
+ros2 service call /start_service first_pkg/srv/Start
+ros2 service call /stop_service first_pkg/srv/Stop
+```
+
