@@ -150,22 +150,23 @@ cuadrada. Recuerda que tendrás que actualizar el topic por el que se envían lo
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include <navigation/topics.h>
+#include <math.h>
 
-class Reactivo:public rclcpp::Node
+
+
+class ReactvCtrl:public rclcpp::Node
 {
 public:
-    Reactivo();
-    //void cbk_key  (const std_msgs::msg::String::SharedPtr msg); //const;
-    void cb_laser_scan(const sensor_msgs::msg::LaserScan::SharedPtr msg);
-    ~Reactivo();
+    ReactvCtrl();
+    void SensarLaser(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    ~ReactvCtrl();
 private:
-
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-    //rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_key_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_copelia_;
-    // void cbk_sqr(const std_msgs::msg::String::SharedPtr msg) const;
-    // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_laser_;
-    //size_t count_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr    sb_sensor_;
+    //rclcpp::Publisher<std_msgs::msg::String>::SharedPtr             publisher_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr         publisher_;
+    float threshold_;
 };
 
 

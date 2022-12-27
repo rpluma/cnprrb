@@ -1,19 +1,24 @@
 <launch>
-    <node   pkg="navigation"
-            exec="rndController"
-            name="rndController"
-            launch-prefix="mate-terminal --tab --title='aleatorio' -x" />
     <node
             pkg="navigation"
-            exec="sqrController"
-            name="sqrController"
-            launch-prefix="mate-terminal --tab --title='cuadrado' -x" />
-
-    <node
-            pkg="navigation"
-            exec="keyController"
-            name="keyController"
+            exec="KeybrdCtrl"
+            name="KeybrdCtrl"
             launch-prefix="mate-terminal --tab --title='teclado' -x" />
+
+    <node   pkg="navigation"
+            exec="RandomCtrl"
+            name="RandomCtrl"
+            launch-prefix="mate-terminal --tab --title='aleatorio' -x" />
+
+    <node   pkg="navigation"
+            exec="ReactvCtrl"
+            name="ReactvCtrl"
+            launch-prefix="mate-terminal --tab --title='reactivo' -x" />
+    <node
+            pkg="navigation"
+            exec="SquareCtrl"
+            name="SquareCtrl"
+            launch-prefix="mate-terminal --tab --title='cuadrado' -x" />
 
     <node
             pkg="navigation"

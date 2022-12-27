@@ -1,14 +1,16 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include <navigation/topics.h>
+
 
 //     <node pkg="navigation" exec="rndController"    name="rndController" />
 
-class rndController:public rclcpp::Node
+class RandomCtrl:public rclcpp::Node
 {
 public:
-    rndController();
-    void publish_method();
-    ~rndController();
+    RandomCtrl();
+    void PublishRandom();
+    ~RandomCtrl();
 private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;

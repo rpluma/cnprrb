@@ -1,20 +1,21 @@
-#include <navigation/sqrController.hpp>
+#include <navigation/squarectrl.hpp>
+//#include "navigation/srv/resize.hpp"
 
-sqrController::sqrController():Node("sqrController")
+SquareCtrl::SquareCtrl():Node("SquareCtrl")
 {
-    publisher_ = this->create_publisher<std_msgs::msg::String> ("sqr_command", 4);
+    publisher_ = this->create_publisher<std_msgs::msg::String> (TPC_SQUARE, 4);
     this->declare_parameter("sqr_size", 4);
     count_=0;
     sqr_size_ = this->get_parameter("sqr_size").get_parameter_value().get<int>();
     // ros2 run navigation sqrController --ros-args -p sqr_size:=5
 }
 
-sqrController::~sqrController()
+SquareCtrl::~SquareCtrl()
 {
     printf("Leaving gently\n");
 }
 
-void sqrController::publish_method()
+void SquareCtrl::PublishSquare()
 {
     auto msg = std_msgs::msg::String();
     if (sqr_size_<=0)
@@ -35,11 +36,11 @@ void sqrController::publish_method()
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    sqrController p;
+    SquareCtrl p;
     rclcpp::Rate loop_rate(0.5);
     while (rclcpp::ok())
     {
-        p.publish_method();
+        p.PublishSquare();
         loop_rate.sleep();
     }
     rclcpp::shutdown();

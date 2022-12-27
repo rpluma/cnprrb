@@ -1,14 +1,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include <navigation/topics.h>
 // #include "navigation/srv/resize.hpp"
-//<node pkg="navigation" exec="keyController"    name="keyController" />
 
-class sqrController:public rclcpp::Node
+class SquareCtrl:public rclcpp::Node
 {
 public:
-    sqrController();
-    void publish_method();
-    ~sqrController();
+    SquareCtrl();
+    void PublishSquare();
+    ~SquareCtrl();
 private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;

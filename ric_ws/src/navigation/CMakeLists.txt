@@ -28,10 +28,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 
-add_executable(rndController src/rndController.cpp)
-add_executable(keyController src/keyController.cpp)
-add_executable(sqrController src/sqrController.cpp)
-add_executable(reactivo src/reactivo.cpp)
+add_executable(KeybrdCtrl src/keybrdctrl.cpp)
+add_executable(RandomCtrl src/randomctrl.cpp)
+add_executable(ReactvCtrl src/reactvctrl.cpp)
+add_executable(SquareCtrl src/squarectrl.cpp)
 add_executable(actuator src/actuator.cpp)
 
 
@@ -39,14 +39,14 @@ add_executable(actuator src/actuator.cpp)
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
 "rosidl_typesupport_cpp")
 
-target_link_libraries(sqrController "${cpp_type_support_target}")
+target_link_libraries(SquareCtrl "${cpp_type_support_target}")
 
 
 install(TARGETS
-  rndController
-  keyController
-  sqrController
-  reactivo
+  KeybrdCtrl
+  ReactvCtrl
+  RandomCtrl
+  SquareCtrl
   actuator
   DESTINATION lib/${PROJECT_NAME})
 
@@ -55,10 +55,10 @@ install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/)
 
-ament_target_dependencies(rndController rclcpp std_msgs)
-ament_target_dependencies(keyController rclcpp std_msgs)
-ament_target_dependencies(sqrController rclcpp std_msgs)
-ament_target_dependencies(reactivo      rclcpp std_msgs sensor_msgs)
+ament_target_dependencies(KeybrdCtrl rclcpp std_msgs)
+ament_target_dependencies(ReactvCtrl rclcpp std_msgs sensor_msgs)
+ament_target_dependencies(RandomCtrl rclcpp std_msgs)
+ament_target_dependencies(SquareCtrl rclcpp std_msgs)
 ament_target_dependencies(actuator rclcpp std_msgs geometry_msgs)
 
 

@@ -2,25 +2,28 @@
 #include <iterator>
 #include <list>
 
-#include <navigation/reactivo.hpp>
+#include <navigation/reactvctrl.hpp>
 
 using std::placeholders::_1;
 
 
-Reactivo::Reactivo():Node("reactivo")
+
+ReactvCtrl::ReactvCtrl():Node("ReactvCtrl")
 {
-    //sub_key_  =this->create_subscription<std_msgs::msg::String>("/key_command", 10, std::bind(&Actuator::cbk_key, this, _1));
-    sub_copelia_=this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/PioneerP3DX/laser_scan", 10, std::bind(&Reactivo::cb_laser_scan, this, _1));
-    // publisher_ = this->create_publisher<std_msgs::msg::String> ("key_command", 10);
+    sb_sensor_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        TPC_SENSOR, 10, std::bind(&ReactvCtrl::SensarLaser, this, _1));
+    //publisher_ = this->create_publisher<std_msgs::msg::String> (TPC_REACTV, 10);
+    publisher_ =this->create_publisher<geometry_msgs::msg::Twist>(TPC_REACTV, 10);
+    threshold_ = 10;
 }
 
-Reactivo::~Reactivo()
+
+ReactvCtrl::~ReactvCtrl()
 {
     printf("Leaving gently\n");
 }
 
-void Reactivo::cb_laser_scan(const sensor_msgs::msg::LaserScan::SharedPtr msg)
+void ReactvCtrl::SensarLaser(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 {
     int n_ranges = msg->ranges.size();
 
@@ -28,7 +31,7 @@ void Reactivo::cb_laser_scan(const sensor_msgs::msg::LaserScan::SharedPtr msg)
     //std::min_element(msg->ranges.begin(), msg->ranges.end());
     //double nearest = *min_it;
     //int pos=std::distance(msg->ranges.begin(), min_it);
-    float   fMin, fMax, fCur;
+    float   fMin, fMax, fCur, angleMin, angleMax;
     int     iMin, iMax, iRng, i;
     for (i=0, iMin=-1, iRng=0; i<n_ranges; i++)
     {
@@ -53,17 +56,31 @@ void Reactivo::cb_laser_scan(const sensor_msgs::msg::LaserScan::SharedPtr msg)
             }
         }
     }
+    geometry_msgs::msg::Twist actuation;
 
-    RCLCPP_INFO(this->get_logger(), "[Reactivo] Measurements: total=%d, range=%d", n_ranges, iRng);
     if (iRng > 0) {
-        float angleMin = (float)(msg->angle_min+iMin*msg->angle_increment)*180.0/3.14;
-        float angleMax = (float)(msg->angle_min+iMax*msg->angle_increment)*180.0/3.14;
-        RCLCPP_INFO(this->get_logger(), "[Reactivo] Minimum: index=%d, value=%0.2f", iMin, fMin);
-        RCLCPP_INFO(this->get_logger(), "[Reactivo] Maximum: index=%d, value=%0.2f", iMax, fMax);
-        RCLCPP_INFO(this->get_logger(), "[Reactivo] AngleMin=%0.2f, AngleMax=%0.2f", angleMin, angleMax);
+        RCLCPP_INFO(this->get_logger(), "[Reactivo] Measurements: total=%d, range=%d, min=%0.1f", n_ranges, iRng, fMin);
+        angleMin = (float)(msg->angle_min+iMin*msg->angle_increment);// *180.0/3.14;
+        angleMax = (float)(msg->angle_min+iMax*msg->angle_increment);//*180.0/3.14;
+        if  (fMin<threshold_)
+        {
+            RCLCPP_INFO(this->get_logger(), "[Reactivo] Minimum: index=%d, value=%0.2f", iMin, fMin);
+            RCLCPP_INFO(this->get_logger(), "[Reactivo] Maximum: index=%d, value=%0.2f", iMax, fMax);
+            RCLCPP_INFO(this->get_logger(), "[Reactivo] AngleMin=%0.2f, AngleMax=%0.2f",
+                        angleMin*180.0/3.14, angleMax*180.0/3.14);
+            actuation.linear.x=0; // linear_;
+            actuation.angular.z= angleMax; // angular_;
+            this->publisher_->publish(actuation);
+        }
+
     } else {
         RCLCPP_INFO(this->get_logger(), "[Reactivo] Min=%0.2f, Cur=%0.2f, Max=%0.2f", fMin, fCur, fMax);
+        actuation.linear.x=0.2;
+        actuation.angular.z= 0;
+        this->publisher_->publish(actuation);
     }
+
+
 
     //ROS_INFO_STREAM("Total measurements: "<<n_ranges);
     //ROS_INFO_STREAM("Nearest obstacle at: "<<nearest<< ", index="<<pos);
@@ -73,11 +90,10 @@ int main (int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     rclcpp::Rate loop_rate(1);
-    auto node=std::make_shared<Reactivo>();
-    while (rclcpp::ok()) // rclcpp::spin(node);
+    auto node=std::make_shared<ReactvCtrl>();
+    while (rclcpp::ok())
     {
         rclcpp::spin_some(node);
-        //node->MoveKey();
         loop_rate.sleep();
     }
     rclcpp::shutdown();

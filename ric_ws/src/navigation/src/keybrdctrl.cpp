@@ -1,20 +1,20 @@
-#include <navigation/keyController.hpp>
+#include <navigation/keybrdctrl.hpp>
 
-keyController::keyController():Node("keyController")
+KeybrdCtrl::KeybrdCtrl():Node("KeybrdCtrl")
 {
-    publisher_ = this->create_publisher<std_msgs::msg::String> ("key_command", 10);
+    publisher_ = this->create_publisher<std_msgs::msg::String> (TPC_KEYBRD, 10);
     count_=0;
     RCLCPP_INFO(this->get_logger(), "Use arrow keys to move the robot.");
     RCLCPP_INFO(this->get_logger(), "Press the space bar to stop the robot.");
     RCLCPP_INFO(this->get_logger(), "Press q to stop the program.");
 }
 
-keyController::~keyController()
+KeybrdCtrl::~KeybrdCtrl()
 {
     printf("Leaving gently\n");
 }
 
-int keyController::Publicar()
+int KeybrdCtrl::Publicar_Tecla()
 {
     char input = getchar();
     bool bPublish = true;
@@ -49,16 +49,18 @@ int keyController::Publicar()
         count_++;
         publisher_->publish(msg);
     }
-    return 1; // no salir
+    return 1; // no salir de main
 }
+
+
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     system("stty raw"); // Enter in console raw mode to avoid <Enter>
-    keyController p;
+    KeybrdCtrl p;
 
-    while (rclcpp::ok() && p.Publicar())
+    while (rclcpp::ok() && p.Publicar_Tecla())
         ;
 
     system("stty cooked"); //restore the console

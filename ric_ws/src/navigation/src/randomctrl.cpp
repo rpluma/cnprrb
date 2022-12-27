@@ -1,28 +1,28 @@
-#include <navigation/rndController.hpp>
+#include <navigation/randomctrl.hpp>
 
-rndController::rndController():Node("rndController")
+RandomCtrl::RandomCtrl():Node("RandomCtrl")
 {
-    publisher_ = this->create_publisher<std_msgs::msg::String> ("rnd_command", 10);
+    publisher_ = this->create_publisher<std_msgs::msg::String> (TPC_RANDOM, 10);
     count_=0;
 }
 
-rndController::~rndController()
+RandomCtrl::~RandomCtrl()
 {
     printf("Leaving gently\n");
 }
 
-void rndController::publish_method()
+void RandomCtrl::PublishRandom()
 {
     auto msg = std_msgs::msg::String();
     int random = round(4*(float)rand()/(float)RAND_MAX);
     count_++;
     switch (random)
     {
-        case 0: msg.data = "stop"; break;
-        case 1: msg.data = "forward"; break;
+        case 0: msg.data = "stop";      break;
+        case 1: msg.data = "forward";   break;
         case 2: msg.data = "backwards"; break;
-        case 3: msg.data = "left"; break;
-        case 4: msg.data = "right"; break;
+        case 3: msg.data = "left";      break;
+        case 4: msg.data = "right";     break;
     }
     RCLCPP_INFO (this->get_logger(), "[#%ld] Rnd Publishing: '%s'", count_, msg.data.c_str());
     publisher_->publish(msg);
@@ -31,11 +31,11 @@ void rndController::publish_method()
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rndController p;
+    RandomCtrl p;
     rclcpp::Rate loop_rate(0.5);
     while (rclcpp::ok())
     {
-        p.publish_method();
+        p.PublishRandom();
         loop_rate.sleep();
     }
     rclcpp::shutdown();
