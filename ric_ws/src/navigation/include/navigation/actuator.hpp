@@ -3,27 +3,6 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include <navigation/topics.h>
 #include <string>
-#define MD_START 0
-#define MD_RANDOM 1
-#define MD_KEYBRD 2
-#define MD_REACTV 3
-#define MD_SQUARE 4
-/*
-
-ros2 topic pub /src_command std_msgs/msg/String '{"data": "ninguno"}' -1
-ros2 topic pub /src_command std_msgs/msg/String '{"data": "aleatorio"}' -1
-
-ros2 run navigation keyController
-ros2 topic pub /src_command std_msgs/msg/String '{"data": "teclado"}' -1
-
-ros2 run navigation sqrController --ros-args -p sqr_size:=5
-ros2 run navigation sqrController
-ros2 param set /sqrController sqr_size 3
-
-ros2 topic pub /src_command std_msgs/msg/String '{"data": "cuadrado"}' -1
-
- */
-
 
 
 //
