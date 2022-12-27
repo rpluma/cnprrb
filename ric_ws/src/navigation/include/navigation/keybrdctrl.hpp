@@ -1,7 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include <navigation/topics.h>
-//<node pkg="navigation" exec="keyController"    name="keyController" />
 
 class KeybrdCtrl:public rclcpp::Node
 {

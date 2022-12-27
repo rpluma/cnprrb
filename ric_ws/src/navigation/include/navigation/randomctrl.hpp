@@ -3,8 +3,6 @@
 #include <navigation/topics.h>
 
 
-//     <node pkg="navigation" exec="rndController"    name="rndController" />
-
 class RandomCtrl:public rclcpp::Node
 {
 public:

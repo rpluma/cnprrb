@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include <navigation/topics.h>
-// #include "navigation/srv/resize.hpp"
+#include "navigation/srv/resize.hpp"
 
 class SquareCtrl:public rclcpp::Node
 {

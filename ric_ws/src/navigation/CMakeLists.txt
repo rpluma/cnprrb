@@ -39,7 +39,7 @@ add_executable(actuator src/actuator.cpp)
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
 "rosidl_typesupport_cpp")
 
-target_link_libraries(SquareCtrl "${cpp_type_support_target}")
+target_link_libraries(SquareCtrl "${cpp_typesupport_target}")
 
 
 install(TARGETS
