@@ -1,0 +1,162 @@
+#include <navigation/actuator.hpp>
+#include <math.h>
+
+using std::placeholders::_1;
+
+
+Actuator::Actuator(char *strTopicPub): Node("Actuator")
+{
+    mode_ = MD_START;
+    source_sb_=this->create_subscription<std_msgs::msg::String>(TPC_SOURCE, 10, std::bind(&Actuator::source_cb, this, _1));
+
+    random_sb_=this->create_subscription<std_msgs::msg::String>(TPC_RANDOM, 10, std::bind(&Actuator::random_cb, this, _1));
+    keybrd_sb_=this->create_subscription<std_msgs::msg::String>(TPC_KEYBRD, 10, std::bind(&Actuator::keybrd_cb, this, _1));
+    //reactv_sb_=this->create_subscription<std_msgs::msg::String>(TPC_REACTV, 10, std::bind(&Actuator::reactv_cb, this, _1));
+    reactv_sb_=this->create_subscription<geometry_msgs::msg::Twist>(TPC_REACTV, 10, std::bind(&Actuator::reactv_cb, this, _1));
+    square_sb_=this->create_subscription<std_msgs::msg::String>(TPC_SQUARE, 10, std::bind(&Actuator::square_cb, this, _1));
+
+    //pub_    =this->create_publisher<geometry_msgs::msg::Twist>("/turtle1/cmd_vel", 10);
+    //pub_    =this->create_publisher<geometry_msgs::msg::Twist>("/PioneerP3DX/cmd_vel", 10);
+    pub_      =this->create_publisher<geometry_msgs::msg::Twist>(strTopicPub, 10);
+
+    linear_ = 0;
+    angular_ = 0;
+    delta_lin_ = 0.5;
+    delta_ang_ = 0.5;
+}
+
+
+
+void Actuator::source_cb(const std_msgs::msg::String::SharedPtr msg)
+{
+    if (msg->data=="aleatorio")
+        mode_ = MD_RANDOM;
+    else if (msg->data=="teclado")
+        mode_ = MD_KEYBRD;
+    else if (msg->data=="reactive")
+        mode_ = MD_REACTV;
+    else if (msg->data=="cuadrado")
+        mode_ = MD_SQUARE;
+    else
+        mode_ = MD_START;
+}
+
+void Actuator::Actuate()
+{
+    geometry_msgs::msg::Twist actuation;
+    actuation.linear.x=linear_;
+    actuation.angular.z=angular_;
+
+    RCLCPP_INFO(this->get_logger(),
+        "Mode %d: linear = %0.1f; angular = %0.1frad (%0.1fº)",
+        this->mode_, linear_, angular_, angular_*180/3.14);
+    this->pub_->publish(actuation);
+}
+
+
+
+Actuator::~Actuator()
+{
+    printf("Leaving gently\n");
+}
+
+
+
+void Actuator::random_cb(const std_msgs::msg::String::SharedPtr msg) //const
+{
+    if (mode_ != MD_RANDOM)
+        return;
+
+    RCLCPP_INFO(this->get_logger(), "Random-Received: '%s'",msg->data.c_str());
+
+    if (msg->data=="stop")           {linear_=0; angular_=0;}
+    else if (msg->data=="forward")   {linear_=1; angular_=0;}
+    else if (msg->data=="backwards") {linear_=-1;angular_=0;}
+    else if (msg->data=="left")      {linear_=0; angular_=-1;}
+    else if (msg->data=="right")     {linear_=0; angular_=1;}
+    this->Actuate();
+}
+
+void Actuator::keybrd_cb(const std_msgs::msg::String::SharedPtr msg) //const
+{
+    if (mode_ != MD_KEYBRD)
+        return;
+
+    if (msg != NULL) // llamada desde MQTT
+    {
+        RCLCPP_INFO(this->get_logger(), "Keyboard-Received: '%s'",msg->data.c_str());
+        if (msg->data=="v++")            {linear_  += delta_lin_;}
+        else if (msg->data=="v--")       {linear_  -= delta_lin_;}
+        else if (msg->data=="w++")       {angular_ += delta_ang_;}
+        else if (msg->data=="w--")       {angular_ -= delta_ang_;}
+        else if (msg->data=="stop")      {linear_ = 0; angular_=0;}
+    } // else llamada desde main
+
+    this->Actuate(); // la acción se repite aunque mientras no se pulse otra tecla
+}
+
+
+
+void Actuator::reactv_cb(const geometry_msgs::msg::Twist::SharedPtr msg)
+{
+    if (mode_ != MD_REACTV)
+        return;
+
+    RCLCPP_INFO(this->get_logger(), "Reactive-Received: Linear=%0.1f, Angular=%0.1f",
+                msg->linear.x, msg->angular.z);
+
+    linear_ =msg->linear.x;
+    angular_=msg->angular.z;
+    this->Actuate();
+}
+
+
+
+void Actuator::square_cb(const std_msgs::msg::String::SharedPtr msg) //const
+{
+    if (mode_ != MD_SQUARE)
+        return;
+
+    RCLCPP_INFO(this->get_logger(), "Square-Received: '%s'",msg->data.c_str());
+
+    if (msg->data=="avanzar")
+    {
+        linear_=1;
+        angular_=0;
+    }
+    else if (msg->data=="girar")
+    {
+        linear_=0;
+        angular_=M_PI/2;
+    }
+    this->Actuate();
+}
+
+
+
+int main (int argc, char* argv[])
+{
+    char defTopicPub[]="/turtle1/cmd_vel";
+    char *strTopicPub =defTopicPub; // topic por defecto para escribir en la tortuga
+
+    rclcpp::init(argc, argv);
+    rclcpp::Rate loop_rate(2);
+
+    for (int i=0;i<argc;i++)
+        if (strcmp(argv[i],"--topicpub")==0)
+            strTopicPub = argv[i+1];
+
+
+    auto node=std::make_shared<Actuator>(strTopicPub);
+    RCLCPP_INFO(node->get_logger(),"Publicando comandos en '%s'", strTopicPub);
+
+
+    while (rclcpp::ok()) // rclcpp::spin(node);
+    {
+        rclcpp::spin_some(node);
+        node->keybrd_cb(NULL); // la acción se repite si está en modo teclado
+        loop_rate.sleep();
+    }
+    rclcpp::shutdown();
+    return 0;
+}
