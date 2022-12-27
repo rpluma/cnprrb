@@ -1,5 +1,0 @@
-<launch>
-    <node pkg="navigation" exec="rndController"    name="rndController" />
-    <node pkg="navigation" exec="sqrController"    name="sqrController" />
-    <node pkg="navigation" exec="actuator"         name="actuator" />
-</launch>

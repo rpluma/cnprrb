@@ -329,3 +329,6 @@ Executable=file:///home/robotics/ric_ws/src/navigation/launch/src_cuadrado.sh
 Interpreter=bash
 Output Filtering Mode=2
 Run current file=false
+
+[Project]
+VersionControlSupport=kdevgit
