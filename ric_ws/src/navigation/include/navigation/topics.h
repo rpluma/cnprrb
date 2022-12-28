@@ -42,6 +42,10 @@ Uso de parámetros invocando a SquareCtrl:
 -----------------------------------------------
 ros2 run navigation SquareCtrl --ros-args -p sqr_size:=2
 
+Uso de parámetros después de invocar a SquareCtrl:
+-----------------------------------------------
+ros2 param set /SquareCtrl sqr_size 3
+
 
 Invocación servicio resize
 --------------------------
@@ -49,9 +53,6 @@ ros2 service call /resize_service navigation/srv/Resize "{newsize: 2}"
 
 
 
-TODO: Uso de parámetros después de invocar a SquareCtrl:
------------------------------------------------
-ros2 param set /SquareCtrl sqr_size 3
 
 
  */

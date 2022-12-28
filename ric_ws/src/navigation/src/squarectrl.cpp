@@ -1,5 +1,4 @@
 #include <navigation/squarectrl.hpp>
-//#include "navigation/srv/resize.hpp"
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -16,6 +15,7 @@ SquareCtrl::SquareCtrl():Node("SquareCtrl")
     server_resize_ = this->create_service<navigation::srv::Resize>(
         "resize_service", std::bind(&SquareCtrl::handle_resize_service, this, _1, _2, _3));
 
+    RCLCPP_INFO(this->get_logger(), "Resize service created");
 }
 
 void SquareCtrl::handle_resize_service(
@@ -41,7 +41,7 @@ void SquareCtrl::handle_resize_service(
 
 SquareCtrl::~SquareCtrl()
 {
-    printf("Leaving gently\n");
+    printf("Leaving gently resize\n");
 }
 
 void SquareCtrl::PublishSquare()
@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
     {
         node->PublishSquare();
         rclcpp::spin_some(node);
+        //rclcpp::spin_once(node); // no compila
         loop_rate.sleep();
     }
     rclcpp::shutdown();
