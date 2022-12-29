@@ -46,12 +46,26 @@ Uso de parámetros después de invocar a SquareCtrl:
 -----------------------------------------------
 ros2 param set /SquareCtrl sqr_size 3
 
-
 Invocación servicio resize
 --------------------------
 ros2 service call /resize_service navigation/srv/Resize "{newsize: 2}"
 
+Invocación al robot copelia
 
+-------------------------- avanzar
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.1, y: 0, z: 0}, angular: {x: 0, y: 0, z: 0}}' -1
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0, y: 0, z: 0}, angular: {x: 0, y: 0, z: 0}}' -1
+
+-------------------------- girar
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0, y: 0, z: 0}, angular: {x: 0, y: 0, z: -0.5}}' -1
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0, y: 0, z: 0}, angular: {x: 0, y: 0, z: 0}}' -1
+
+
+------------------------------ atrás
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: -0.1, y: 0, z: 0}, angular: {x: 0, y: 0, z: 0}}' -1
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0, y: 0, z: 0}, angular: {x: 0, y: 0, z: 0}}' -1
+
+-rate 0.1
 
 
 
