@@ -1,0 +1,20 @@
+echo
+echo Paso 0: Presentación Práctica de ROS2
+echo -------------------------
+echo
+echo Ricardo Panero Lamothe
+echo Málaga a 5 de enero de 2023
+echo
+echo
+echo Para agilizar la grabación, lanzamos los scripts p0 a p6
+echo
+echo Paso p0: Presentación Práctica de ROS2 (este script)
+echo Paso p1: Arrancar Copelia (usando launch)
+echo Paso p2: Lanzar nodos de navigation (usando launch)
+echo Paso p3: Pasar al modo aleatorio (ros2 topic pub)
+echo Paso p4: Dejar de escuchar al servicio aleatorio (ros2 topic pub)
+echo Paso p5: Pasar al modo reactivo (ros2 topic pub)
+echo Paso p6: Ejecución servicio Status (ros2 service call)
+
+
+

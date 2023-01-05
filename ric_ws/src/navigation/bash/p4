@@ -1,5 +1,5 @@
 echo
-Paso 4: Parando con modo "ninguno"
+echo Paso 4: Parando con modo "ninguno"
 echo -----------------------------
 echo
 echo ros2 topic pub /cmd_source std_msgs/msg/String '{"data": "ninguno"}' -1
