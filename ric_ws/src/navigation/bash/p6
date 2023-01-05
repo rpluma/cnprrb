@@ -1,0 +1,8 @@
+echo
+echo Paso 6: Ejecución servicio Status
+echo ---------------------------------
+echo
+echo ros2 service call /status_service navigation/srv/Status
+echo
+ros2 service call /status_service navigation/srv/Status
+
