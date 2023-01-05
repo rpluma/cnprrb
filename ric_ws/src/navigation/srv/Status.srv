@@ -1,0 +1,5 @@
+---
+int64 tot_distancia
+int64 evitados_izda
+int64 evitados_dcha
+

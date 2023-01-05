@@ -12,7 +12,7 @@ public:
     void handle_resize_service(
         const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<navigation::srv::Resize::Request> request,
-        std::shared_ptr<navigation::srv::Resize::Response> response);
+              std::shared_ptr<navigation::srv::Resize::Response> response);
     ~SquareCtrl();
 private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;

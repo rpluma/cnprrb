@@ -155,12 +155,17 @@ cuadrada. Recuerda que tendrás que actualizar el topic por el que se envían lo
 #include <navigation/topics.h>
 #include <math.h>
 #include "sensor_msgs/msg/laser_scan.hpp"
-
+#include "navigation/srv/status.hpp"
 
 class ReactvCtrl:public rclcpp::Node
 {
 public:
     ReactvCtrl();
+    rclcpp::Service<navigation::srv::Status>::SharedPtr server_status_;
+    void handle_status_service(
+        const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<navigation::srv::Status::Request> request,
+              std::shared_ptr<navigation::srv::Status::Response> response);
     void CB_Laser(const sensor_msgs::msg::LaserScan::SharedPtr msg);
     void CB_Truth(const geometry_msgs::msg::Pose::SharedPtr msg);
     ~ReactvCtrl();

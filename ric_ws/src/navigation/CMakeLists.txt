@@ -31,6 +31,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
 "srv/Resize.srv"
+"srv/Status.srv"
 )
 
 ament_package()
@@ -63,6 +64,8 @@ install(TARGETS
 # this must appear after the add_executable section
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
 "rosidl_typesupport_cpp")
+
+target_link_libraries(ReactvCtrl "${cpp_typesupport_target}")
 
 target_link_libraries(SquareCtrl "${cpp_typesupport_target}")
 
