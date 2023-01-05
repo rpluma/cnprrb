@@ -1,7 +1,4 @@
-echo
-echo Paso 4: Parando con modo "ninguno"
-echo -----------------------------
-echo
-echo ros2 topic pub /cmd_source std_msgs/msg/String '{"data": "ninguno"}' -1
-echo
-ros2 topic pub /cmd_source std_msgs/msg/String '{"data": "ninguno"}' -1
+echo Paso 4: Ejecución servicio Status
+echo ros2 service call /status_service navigation/srv/Status
+echo ---------------------------------
+ros2 service call /status_service navigation/srv/Status

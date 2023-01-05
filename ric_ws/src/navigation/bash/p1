@@ -1,8 +1,5 @@
-echo
 echo Paso 1: Iniciando Copelia
-echo -------------------------
-echo
 echo ros2 launch navigation copelia.launch
-echo
+echo -------------------------
 ros2 launch navigation copelia.launch
 
