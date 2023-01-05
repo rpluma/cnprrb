@@ -1,0 +1,3 @@
+echo Paso 2: Lanzando nodos del ejecutable navigation
+ros2 launch navigation navigation.launch
+

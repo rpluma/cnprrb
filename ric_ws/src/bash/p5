@@ -1,0 +1,3 @@
+echo Paso 5: Pasando a modo reactivo
+ros2 topic pub /cmd_source std_msgs/msg/String '{"data": "reactive"}' -1
+
