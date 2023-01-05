@@ -12,12 +12,12 @@ SquareCtrl::SquareCtrl():Node("SquareCtrl")
     count_=0;
     sqr_size_ = this->get_parameter("sqr_size").get_parameter_value().get<int>();
 
-    server_resize_ = this->create_service<navigation::srv::Resize>(
-        "resize_service", std::bind(&SquareCtrl::handle_resize_service, this, _1, _2, _3));
+    //server_resize_ = this->create_service<navigation::srv::Resize>(
+    //    "resize_service", std::bind(&SquareCtrl::handle_resize_service, this, _1, _2, _3));
 
     RCLCPP_INFO(this->get_logger(), "Resize service created");
 }
-
+/*
 void SquareCtrl::handle_resize_service(
         const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<navigation::srv::Resize::Request> request,
@@ -37,7 +37,7 @@ void SquareCtrl::handle_resize_service(
     this->set_parameter(size_param);
 
 }
-
+*/
 
 SquareCtrl::~SquareCtrl()
 {

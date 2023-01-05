@@ -29,8 +29,8 @@ find_package(sensor_msgs REQUIRED)
 # interface generation must appear before ament_package
 find_package(rosidl_default_generators REQUIRED)
 
+# "srv/Resize.srv"
 rosidl_generate_interfaces(${PROJECT_NAME}
-"srv/Resize.srv"
 "srv/Status.srv"
 )
 
@@ -67,7 +67,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
 
 target_link_libraries(ReactvCtrl "${cpp_typesupport_target}")
 
-target_link_libraries(SquareCtrl "${cpp_typesupport_target}")
+#target_link_libraries(SquareCtrl "${cpp_typesupport_target}")
 
 
 
