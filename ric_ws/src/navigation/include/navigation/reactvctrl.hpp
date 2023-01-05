@@ -151,22 +151,40 @@ cuadrada. Recuerda que tendrás que actualizar el topic por el que se envían lo
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 #include <navigation/topics.h>
 #include <math.h>
-
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 
 class ReactvCtrl:public rclcpp::Node
 {
 public:
     ReactvCtrl();
-    void SensarLaser(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    void CB_Laser(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    void CB_Truth(const geometry_msgs::msg::Pose::SharedPtr msg);
     ~ReactvCtrl();
+
+
 private:
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr    sb_sensor_;
-    //rclcpp::Publisher<std_msgs::msg::String>::SharedPtr             publisher_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr         publisher_;
-    float threshold_;
+
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr    sb_laser_;
+    double  umbralChoque_; // distancia en la que el
+    int     evitadosDcha_; // número de obstáculos evitados por la derecha
+    int     evitadosIzda_; // número de obstáculos evitados por la izquierda
+    float   velocidadLin_; // velocidad lineal en metros por segundo
+    float   velocidadAng_; // velocidad angular en radianes por segundo
+
+    rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr       sb_truth_;
+    double   ultPositionX_; // última posición conocida según topic /PioneerP3DX/ground_truth
+    double   ultPositionY_; // ídem
+    double   totalDistanc_; // distancia recorrida desde que inició el controlador
+    int      ticksFinGiro_; // número de invocaciones pendientes hasta terminar el giro
+
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr         pb_twist_;
+
+    int      iTotalTicks_;
+
 };
 
 

@@ -10,7 +10,9 @@
 #define TPC_SQUARE "/cmd_square"
 #define TPC_REACTV "/cmd_reactv"
 
-#define TPC_SENSOR "/PioneerP3DX/laser_scan"
+#define TPC_LASER "/PioneerP3DX/laser_scan"
+#define TPC_TRUTH "/PioneerP3DX/ground_truth"
+
 
 
 

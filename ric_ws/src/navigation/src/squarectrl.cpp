@@ -29,7 +29,7 @@ void SquareCtrl::handle_resize_service(
     int oldsize, newsize;
     oldsize = this->get_parameter("sqr_size").get_parameter_value().get<int>();
     newsize = request->newsize;
-    RCLCPP_INFO(this->get_logger(), "Oldsize %ld, Newsize%ld", oldsize, newsize);
+    RCLCPP_INFO(this->get_logger(), "Oldsize %d, Newsize%d", oldsize, newsize);
 
     //------------------- implementación del servicio
     response->oldsize = this->get_parameter("sqr_size").get_parameter_value().get<int>();
