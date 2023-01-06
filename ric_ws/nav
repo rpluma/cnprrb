@@ -1,5 +1,3 @@
-echo Paso 2: Lanzando nodos de  navigation
 echo ros2 launch navigation navigation.launch
-echo -------------------------------------
 ros2 launch navigation navigation.launch
 

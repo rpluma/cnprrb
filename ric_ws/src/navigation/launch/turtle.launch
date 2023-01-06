@@ -1,0 +1,7 @@
+<launch>
+    <node
+            pkg="turtlesim"
+            exec="turtlesim_node"
+            name="turtle1"
+            launch-prefix="mate-terminal --tab --title='tur' -x" />
+</launch>

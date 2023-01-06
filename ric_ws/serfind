@@ -1,0 +1,2 @@
+echo ros2 service find navigation/srv/Status
+ros2 service find navigation/srv/Status

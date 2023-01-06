@@ -1,0 +1,3 @@
+echo ros2 param get /SquareCtrl sqr_size
+ros2 param get /SquareCtrl sqr_size
+

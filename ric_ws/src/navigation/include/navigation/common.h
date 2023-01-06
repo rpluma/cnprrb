@@ -1,15 +1,29 @@
 
+// Topics específicos de publicación y suscripción
 #define TPC_SOURCE "/cmd_source" // a qué controlador tiene que escuchar el actuador
 #define TPC_RANDOM "/cmd_random" // órdenes generadas por el controlador aleatorio
 #define TPC_KEYBRD "/cmd_keybrd" // órdenes generadas por el controlador del teclado
 #define TPC_SQUARE "/cmd_square" // órdenes generadas por el generador de cuadrados
 #define TPC_REACTV "/cmd_reactv" // órdenes generadas por el controlador reactivo
 
-#define TPC_LASER "/PioneerP3DX/laser_scan"     // lecturas del láser del robot
-#define TPC_TRUTH "/PioneerP3DX/ground_truth"   // posición real del robot
+//----- Topics genéricos donde suscribirse
+#define TPC_LASER  "/PioneerP3DX/laser_scan"    // lecturas del láser del robot
+#define TPC_TRUTH  "/PioneerP3DX/ground_truth"  // posición real del robot
 
+//----- Topics genéricos donde se publica
+#define TPC_TURTLE "/turtle1/cmd_vel"           // comandos a la tortuga
+#define TPC_COPPEL "/PioneerP3DX/cmd_vel"       // comandos a Coppelia
+
+
+//----- Modos en que puede estar el actuador
+#define MD_WAIT   0 // modo inicio
+#define MD_RANDOM 1 // modo aleatorio
+#define MD_KEYBRD 2 // modo teclado
+#define MD_REACTV 3 // modo reactivo
+#define MD_SQUARE 4 // modo cuadrado
 
 //----- Comandos para modificar el modo del actuador
+#define STR_CMD_MODE_WAIT    "esperar"
 #define STR_CMD_MODE_RANDOM  "aleatorio"
 #define STR_CMD_MODE_KEYBRD  "teclado"
 #define STR_CMD_MODE_REACTV  "reactivo"

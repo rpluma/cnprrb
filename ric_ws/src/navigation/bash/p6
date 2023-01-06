@@ -1,4 +1,0 @@
-echo Paso 6: Iniciando modo aleatorio
-echo ros2 topic pub /cmd_source std_msgs/msg/String '{"data": "aleatorio"}' -1
-echo -------------------------------------
-ros2 topic pub /cmd_source std_msgs/msg/String '{"data": "aleatorio"}' -1

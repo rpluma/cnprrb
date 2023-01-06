@@ -1,0 +1,3 @@
+echo ros2 param set /SquareCtrl sqr_size 3
+ros2 param set /SquareCtrl sqr_size 3
+

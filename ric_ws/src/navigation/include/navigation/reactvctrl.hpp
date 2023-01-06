@@ -69,37 +69,6 @@ cuadrada. Recuerda que tendrás que actualizar el topic por el que se envían lo
 [Twist] desde el nodo “actuator”
 
 
-    -------------------------------------------------------
-    Cambios realizados:
-    - fichero simulador.launch: añadida opción launch-prefix
-    - actuador.cpp: el topic donde publicar se puede cambiar desde la línea de comandos
-        ros2 run navigation actuator
-            -> Publicando comandos en '/turtle1/cmd_vel'
-        ros2 run navigation actuator --topicpub /PioneerP3DX/cmd_vel
-            -> Publicando comandos en '/PioneerP3DX/cmd_vel'
-    - fichero simulador2.launch: lanzamiento de nodos de la práctica anterior cambiando el topic
-
-
-    -------------------------------------------------------
-
-    Pruebas realizadas
-
-    1a) Lanzar el simulador
-        ros2 launch navigation simulador.launch
-
-    1b) Lista de topics
-        ros2 topic list
-            /PioneerP3DX/cmd_vel
-            /PioneerP3DX/ground_truth
-            /PioneerP3DX/laser_scan
-            /PioneerP3DX/odom
-            /PioneerP3DX/range_bearing_scan
-            /PioneerP3DX/ultrasonic
-            /clock
-            /parameter_events
-            /rosout
-            /tf
-
     1c) Publicar en cmd_vel
         ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: -0.2, y: 0.1, z: 0}, angular: {x: 0, y: 0, z: -0.05}}' --rate 0.1
 
@@ -143,55 +112,56 @@ cuadrada. Recuerda que tendrás que actualizar el topic por el que se envían lo
             intensities: []
             ---
     2a) Lanzar nodos de práctica anterior
-        ros2 launch navigation simulador2.launch
+        ros2 launch navigation simulador2.launchS
 
         */
 
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
-#include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/pose.hpp"
-#include <navigation/topics.h>
-#include <math.h>
-#include "sensor_msgs/msg/laser_scan.hpp"
-#include "navigation/srv/status.hpp"
+#include "std_msgs/msg/string.hpp"              // Interfaz String
+#include "sensor_msgs/msg/laser_scan.hpp"       // Interfaz LaserScan
+#include "geometry_msgs/msg/twist.hpp"          // Interfaz Twist
+#include "geometry_msgs/msg/pose.hpp"           // Interfaz Pose
+#include <navigation/common.h>                  // constantes simbólicas de topics y comandos
+#include <math.h>                               // constante M_PI
+#include "navigation/srv/status.hpp"            // Interfaz servicio Status
 
 class ReactvCtrl:public rclcpp::Node
 {
 public:
-    ReactvCtrl();
+    ReactvCtrl();                               // Constructor
+    void PublicarTwist();                       // Envío de mensaje Twist al actuador
+    ~ReactvCtrl();                              // Destructor
+
+    // Callbacks para manejar mensajes recibidos
+    void CB_Laser(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    void CB_Truth(const geometry_msgs::msg::Pose::SharedPtr msg);
+
+    // Manejo del servidor Status
     rclcpp::Service<navigation::srv::Status>::SharedPtr server_status_;
     void handle_status_service(
         const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<navigation::srv::Status::Request> request,
               std::shared_ptr<navigation::srv::Status::Response> response);
-    void CB_Laser(const sensor_msgs::msg::LaserScan::SharedPtr msg);
-    void CB_Truth(const geometry_msgs::msg::Pose::SharedPtr msg);
-    ~ReactvCtrl();
-    float   velocidadLin_; // velocidad lineal en metros por segundo
-    float   velocidadAng_; // velocidad angular en radianes por segundo
-    int      iTotalTicks_;
-    geometry_msgs::msg::Twist msgTwist_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr         pb_twist_;
-
-
 private:
+    int      estado_;       // estado en que se encuentra el controlador
 
+    //---------------------  TOPIC /cmd_reactv
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr         pb_twist_;
+    geometry_msgs::msg::Twist msgTwist_;
+    float    velocidadLin_; // velocidad lineal en metros por segundo
+    float    velocidadAng_; // velocidad angular en radianes por segundo
+
+    //---------------------  TOPIC /PioneerP3DX/laser_scan
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr    sb_laser_;
     double  umbralChoque_; // distancia en la que el
     int     evitadosDcha_; // número de obstáculos evitados por la derecha
     int     evitadosIzda_; // número de obstáculos evitados por la izquierda
 
+    //---------------------  TOPIC /PioneerP3DX/ground_truth
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr       sb_truth_;
     double   ultPositionX_; // última posición conocida según topic /PioneerP3DX/ground_truth
     double   ultPositionY_; // ídem
     double   totalDistanc_; // distancia recorrida desde que inició el controlador
-    int      ticksFinGiro_; // número de invocaciones pendientes hasta terminar el giro
-
-
-
-
 };
 
 

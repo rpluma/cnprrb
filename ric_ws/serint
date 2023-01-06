@@ -1,0 +1,2 @@
+echo ros2 interface show navigation/srv/Status
+ros2 interface show navigation/srv/Status

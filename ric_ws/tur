@@ -1,5 +1,3 @@
-echo Paso 1b: Iniciando la torgua
 echo ros2 launch navigation turtle.launch
-echo -------------------------
 ros2 launch navigation turtle.launch
 

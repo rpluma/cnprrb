@@ -1,0 +1,3 @@
+echo ros2 param list
+ros2 param list
+

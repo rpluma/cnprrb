@@ -1,6 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include <navigation/topics.h>
+#include <navigation/common.h>
 
 
 class RandomCtrl:public rclcpp::Node

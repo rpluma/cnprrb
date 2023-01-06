@@ -4,19 +4,19 @@
 using std::placeholders::_1;
 
 
-Actuator::Actuator(char *strTopicPub): Node("Actuator")
+//Actuator::Actuator(char *strTopicPub): Node("Actuator")
+Actuator::Actuator(): Node("Actuator")
 {
-    mode_ = MD_START;
+    mode_     = MD_WAIT;
     source_sb_=this->create_subscription<std_msgs::msg::String>(TPC_SOURCE, 10, std::bind(&Actuator::source_cb, this, _1));
 
     random_sb_=this->create_subscription<std_msgs::msg::String>(TPC_RANDOM, 10, std::bind(&Actuator::random_cb, this, _1));
     keybrd_sb_=this->create_subscription<std_msgs::msg::String>(TPC_KEYBRD, 10, std::bind(&Actuator::keybrd_cb, this, _1));
-    reactv_sb_=this->create_subscription<geometry_msgs::msg::Twist>(TPC_REACTV, 10, std::bind(&Actuator::reactv_cb, this, _1));
     square_sb_=this->create_subscription<std_msgs::msg::String>(TPC_SQUARE, 10, std::bind(&Actuator::square_cb, this, _1));
+    reactv_sb_=this->create_subscription<geometry_msgs::msg::Twist>(TPC_REACTV, 10, std::bind(&Actuator::reactv_cb, this, _1));
 
-    //pub_    =this->create_publisher<geometry_msgs::msg::Twist>("/turtle1/cmd_vel", 10);
-    //pub_    =this->create_publisher<geometry_msgs::msg::Twist>("/PioneerP3DX/cmd_vel", 10);
-    pub_      =this->create_publisher<geometry_msgs::msg::Twist>(strTopicPub, 10);
+    pbTurtle_ =this->create_publisher<geometry_msgs::msg::Twist>(TPC_TURTLE, 10);
+    pbCoppel_ =this->create_publisher<geometry_msgs::msg::Twist>(TPC_COPPEL, 10);
 
     linear_ = 0;
     angular_ = 0;
@@ -37,10 +37,10 @@ void Actuator::source_cb(const std_msgs::msg::String::SharedPtr msg)
     else if (msg->data==STR_CMD_MODE_SQUARE)
         mode_ = MD_SQUARE;
     else
-        mode_ = MD_START;
+        mode_ = MD_WAIT;
 }
 
-void Actuator::Actuate(char* strController, char* strMsg)
+void Actuator::Actuate(char* strController, const char* strMsg)
 {
     // Visualizar el modo, la acción y cómo se traduce a tipo Twist
     RCLCPP_INFO(this->get_logger(),
@@ -51,14 +51,17 @@ void Actuator::Actuate(char* strController, char* strMsg)
     geometry_msgs::msg::Twist actuation;
     actuation.linear.x=linear_;
     actuation.angular.z=angular_;
-    this->pub_->publish(actuation);
+
+    // para evaluar el efecto del ruido del actuador publicamos en 2 topics
+    this->pbTurtle_->publish(actuation);
+    this->pbCoppel_->publish(actuation);
 }
 
 
 
 Actuator::~Actuator()
 {
-    printf("Leaving gently\n");
+    printf("Actuator leaving gently\n");
 }
 
 
@@ -128,20 +131,18 @@ void Actuator::square_cb(const std_msgs::msg::String::SharedPtr msg) //const
 
 int main (int argc, char* argv[])
 {
-    char defTopicPub[]="/turtle1/cmd_vel";
-    char *strTopicPub =defTopicPub; // topic por defecto para escribir en la tortuga
-
     rclcpp::init(argc, argv);
     rclcpp::Rate loop_rate(2);
 
-    for (int i=0;i<argc;i++)
-        if (strcmp(argv[i],"--topicpub")==0)
-            strTopicPub = argv[i+1];
-
-
-    auto node=std::make_shared<Actuator>(strTopicPub);
-    RCLCPP_INFO(node->get_logger(),"Publicando comandos en '%s'", strTopicPub);
-
+    //char defTopicPub[]="/turtle1/cmd_vel";
+    //char *strTopicPub =defTopicPub; // topic por defecto para escribir en la tortuga
+    //
+    //for (int i=0;i<argc;i++)
+    //    if (strcmp(argv[i],"--topicpub")==0)
+    //        strTopicPub = argv[i+1];
+    //auto node=std::make_shared<Actuator>(strTopicPub);
+    auto node=std::make_shared<Actuator>();
+    //RCLCPP_INFO(node->get_logger(),"Publicando comandos en '%s'", strTopicPub);
 
     while (rclcpp::ok()) // rclcpp::spin(node);
     {

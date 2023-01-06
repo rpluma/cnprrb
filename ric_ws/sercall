@@ -1,4 +1,2 @@
-echo Paso 4: Ejecución servicio Status
 echo ros2 service call /status_service navigation/srv/Status
-echo ---------------------------------
 ros2 service call /status_service navigation/srv/Status

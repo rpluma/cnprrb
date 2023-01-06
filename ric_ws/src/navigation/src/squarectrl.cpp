@@ -49,7 +49,7 @@ void SquareCtrl::PublishSquare()
     auto msg = std_msgs::msg::String();
     if (sqr_size_<=0)
     {
-        msg.data = STR_CMD_SQRE_GIRA
+        msg.data = STR_CMD_SQRE_GIRA;
         sqr_size_ = this->get_parameter("sqr_size").get_parameter_value().get<int>();
     }
     else
