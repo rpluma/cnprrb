@@ -1,18 +1,37 @@
-#define MD_START 0 // modo inicio
-#define MD_RANDOM 1 // modo aleatorio
-#define MD_KEYBRD 2 // modo teclado
-#define MD_REACTV 3 // modo reactivo
-#define MD_SQUARE 4 // modo cuadrado
 
-#define TPC_SOURCE "/cmd_source"
-#define TPC_RANDOM "/cmd_random"
-#define TPC_KEYBRD "/cmd_keybrd"
-#define TPC_SQUARE "/cmd_square"
-#define TPC_REACTV "/cmd_reactv"
+#define TPC_SOURCE "/cmd_source" // a qué controlador tiene que escuchar el actuador
+#define TPC_RANDOM "/cmd_random" // órdenes generadas por el controlador aleatorio
+#define TPC_KEYBRD "/cmd_keybrd" // órdenes generadas por el controlador del teclado
+#define TPC_SQUARE "/cmd_square" // órdenes generadas por el generador de cuadrados
+#define TPC_REACTV "/cmd_reactv" // órdenes generadas por el controlador reactivo
 
-#define TPC_LASER "/PioneerP3DX/laser_scan"
-#define TPC_TRUTH "/PioneerP3DX/ground_truth"
+#define TPC_LASER "/PioneerP3DX/laser_scan"     // lecturas del láser del robot
+#define TPC_TRUTH "/PioneerP3DX/ground_truth"   // posición real del robot
 
+
+//----- Comandos para modificar el modo del actuador
+#define STR_CMD_MODE_RANDOM  "aleatorio"
+#define STR_CMD_MODE_KEYBRD  "teclado"
+#define STR_CMD_MODE_REACTV  "reactivo"
+#define STR_CMD_MODE_SQUARE  "cuadrado"
+
+//----- Comandos enviados desde el teclado
+#define STR_CMD_KEYB_INC_V   "v++"
+#define STR_CMD_KEYB_DEC_V   "v--"
+#define STR_CMD_KEYB_INC_W   "w++"
+#define STR_CMD_KEYB_DEC_W   "w--"
+#define STR_CMD_KEYB_STOP    "stop"
+
+//----- Comandos generados aleatoriamente
+#define STR_CMD_RAND_STOP    "stop"
+#define STR_CMD_RAND_FWARD   "forward"
+#define STR_CMD_RAND_BWARD   "backwards"
+#define STR_CMD_RAND_LEFT    "left"
+#define STR_CMD_RAND_RIGHT   "right"
+
+//----- Comandos enviados desde el generador de cuadrados
+#define STR_CMD_SQRE_AVAN    "avanzar"
+#define STR_CMD_SQRE_GIRA    "girar"
 
 
 

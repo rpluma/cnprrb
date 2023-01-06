@@ -23,22 +23,16 @@ int KeybrdCtrl::Publicar_Tecla()
     switch (input)
     {
         case 0x41: // up
-            //RCLCPP_INFO(this->get_logger(), "[KeyController] Detected Up key\n");
-            msg.data = "v++"; break;
+            msg.data = STR_CMD_KEYB_INC_V; break;
         case 0x42: // down
-            //RCLCPP_INFO(this->get_logger(), "[KeyController] Detected Down key\n");
-            msg.data = "v--"; break;
+            msg.data = STR_CMD_KEYB_DEC_V; break;
         case 0x43: // right
-            //RCLCPP_INFO(this->get_logger(), "[KeyController] Detected Right key\n");
-            msg.data = "w--"; break;
+            msg.data = STR_CMD_KEYB_INC_W; break;
         case 0x44: // left
-            //RCLCPP_INFO(this->get_logger(), "[KeyController] Detected Left key\n");
-            msg.data = "w++"; break;
+            msg.data = STR_CMD_KEYB_DEC_W; break;
         case 0x20: // stop
-            //RCLCPP_INFO(this->get_logger(), "[KeyController] Detected Space key\n");
-            msg.data = "stop"; break;
+            msg.data = STR_CMD_KEYB_STOP; break;
         case 'q': // salir
-            //RCLCPP_INFO(this->get_logger(), "[KeyController] Detected q = Exit\n");
             return 0; // salir
         default:
             bPublish=false;

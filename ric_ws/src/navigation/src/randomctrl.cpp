@@ -18,11 +18,11 @@ void RandomCtrl::PublishRandom()
     count_++;
     switch (random)
     {
-        case 0: msg.data = "stop";      break;
-        case 1: msg.data = "forward";   break;
-        case 2: msg.data = "backwards"; break;
-        case 3: msg.data = "left";      break;
-        case 4: msg.data = "right";     break;
+        case 0: msg.data = STR_CMD_RAND_STOP;   break;
+        case 1: msg.data = STR_CMD_RAND_FWARD;  break;
+        case 2: msg.data = STR_CMD_RAND_BWARD;  break;
+        case 3: msg.data = STR_CMD_RAND_LEFT;   break;
+        case 4: msg.data = STR_CMD_RAND_RIGHT;  break;
     }
     RCLCPP_INFO (this->get_logger(), "[#%ld] Rnd Publishing: '%s'", count_, msg.data.c_str());
     publisher_->publish(msg);
