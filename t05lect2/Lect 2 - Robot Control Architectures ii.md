@@ -368,3 +368,47 @@ ros2 service call /start_service first_pkg/srv/Start
 ros2 service call /stop_service first_pkg/srv/Stop
 ```
 
+# Copelia
+
+## Topics
+
+Suscripciones
+- /PioneerP3DX/cmd_vel (geometry_msgs/msg/Twist)
+
+Publicaciones
+- /PioneerP3DX/laser_scan (sensor_msgs/msg/LaserScan)
+- /PioneerP3DX/odom (nav_msgs/msg/Odometry)
+- /PioneerP3DX/ground_truth (geometry_msgs/msg/Pose)
+
+## Lanzar simulador
+```
+cd ~/CoppeliaSim_Edu_V4_3_0_rev12_Ubuntu20_04/
+./coppeliaSim.sh
+File -> Open Scene -> coppelia_ws/src/coppelia_sim/coppelia_ros2_pkg/scenes/ros2_pioneer.ttt"
+
+ros2 launch navigation simulador.launch
+ros2 topic list
+ros2 topic info /PioneerP3DX/cmd_vel
+ros2 interface show geometry_msgs/msg/Twist
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: 1, y: 0.1, z: 0}, angular: {x: 0, y: 0, z: -0.1}}' --rate 0.1
+ros2 topic pub /PioneerP3DX/cmd_vel geometry_msgs/msg/Twist '{linear: {x: -0.5, y: 0.1, z: 0}, angular: {x: 0, y: 0, z: -0.1}}' --rate 0.1
+
+ros2 topic echo /PioneerP3DX/ground_truth
+ros2 topic echo /PioneerP3DX/laser_scan
+
+
+ros2 topic pub /src_command std_msgs/msg/String '{"data": "ninguno"}' -1
+ros2 topic pub /src_command std_msgs/msg/String '{"data": "aleatorio"}' -1
+
+ros2 run navigation keyController
+ros2 topic pub /src_command std_msgs/msg/String '{"data": "teclado"}' -1
+
+ros2 run navigation sqrController --ros-args -p sqr_size:=5
+ros2 run navigation sqrController
+ros2 param set /sqrController sqr_size 3
+
+ros2 topic pub /src_command std_msgs/msg/String '{"data": "cuadrado"}' -1
+
+
+
+```
