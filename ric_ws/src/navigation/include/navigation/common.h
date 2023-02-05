@@ -1,10 +1,10 @@
-
 // Topics específicos de publicación y suscripción
 #define TPC_SOURCE "/cmd_source" // a qué controlador tiene que escuchar el actuador
 #define TPC_RANDOM "/cmd_random" // órdenes generadas por el controlador aleatorio
 #define TPC_KEYBRD "/cmd_keybrd" // órdenes generadas por el controlador del teclado
 #define TPC_SQUARE "/cmd_square" // órdenes generadas por el generador de cuadrados
 #define TPC_REACTV "/cmd_reactv" // órdenes generadas por el controlador reactivo
+
 
 //----- Topics genéricos donde suscribirse
 #define TPC_LASER  "/PioneerP3DX/laser_scan"    // lecturas del láser del robot
