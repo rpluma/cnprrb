@@ -50,6 +50,7 @@ add_executable(RandomCtrl src/randomctrl.cpp)
 add_executable(ReactvCtrl src/reactvctrl.cpp)
 add_executable(SquareCtrl src/squarectrl.cpp)
 add_executable(actuator src/actuator.cpp)
+add_executable(ArmController src/arm_controller.cpp)
 
 install(TARGETS
   KeybrdCtrl
@@ -57,6 +58,7 @@ install(TARGETS
   RandomCtrl
   SquareCtrl
   actuator
+  ArmController
   DESTINATION lib/${PROJECT_NAME})
 
 
@@ -77,4 +79,5 @@ ament_target_dependencies(ReactvCtrl rclcpp std_msgs sensor_msgs)
 ament_target_dependencies(RandomCtrl rclcpp std_msgs)
 ament_target_dependencies(SquareCtrl rclcpp std_msgs)
 ament_target_dependencies(actuator rclcpp std_msgs geometry_msgs)
+ament_target_dependencies(ArmController rclcpp std_msgs geometry_msgs)
 
