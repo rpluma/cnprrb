@@ -22,6 +22,11 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr subLaser_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr subPose_;
 
-    size_t count_;
+    // variables para guardar la pose actual y la pose home
+    geometry_msgs::msg::Pose poseCurrent_;
+    geometry_msgs::msg::Pose poseHome_;
+
+    // variable con la lectura del láser
+    float float32Laser_ = 0;
 };
 
